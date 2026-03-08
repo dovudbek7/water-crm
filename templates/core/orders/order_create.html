@@ -17,6 +17,10 @@
         {{ order_form.shop }}
       </div>
       <div>
+        <label for="id_order_type">Buyurtma turi</label>
+        {{ order_form.order_type }}
+      </div>
+      <div>
         <label>Sana</label>
         <input type="text" value="{{ today|date:'d.m.Y' }}" readonly>
       </div>

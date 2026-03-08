@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_extras %}
+
+{% block title %}Xodim{% endblock %}
+{% block page_title %}{{ employee }}{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head">
+    <h3>{{ employee }}</h3>
+    <div class="order-actions">
+      <a class="btn btn-light" href="{% url 'employee-detail-export-pdf' employee.pk %}">PDF</a>
+      <a class="btn btn-light" href="{% url 'employee-detail-export-excel' employee.pk %}">Excel</a>
+      <a class="btn btn-light" href="{% url 'employee-update' employee.pk %}">Tahrirlash</a>
+    </div>
+  </div>
+  <div class="grid-form">
+    <div>
+      <label>Rasm</label>
+      {% if employee.photo %}
+        <img src="{{ employee.photo.url }}" data-fullscreen-image="{{ employee.photo.url }}" alt="Xodim rasmi" class="image-thumb">
+      {% else %}
+        <div class="avatar" style="width:68px;height:68px;"><span class="material-symbols-outlined">person</span></div>
+      {% endif %}
+    </div>
+    <div>
+      <label>Ism</label>
+      <input type="text" readonly value="{{ employee_name|default:'-' }}">
+    </div>
+    <div>
+      <label>Familiya</label>
+      <input type="text" readonly value="{{ employee_last_name|default:'-' }}">
+    </div>
+    <div>
+      <label>Lavozim</label>
+      <input type="text" readonly value="{{ employee.get_role_display }}">
+    </div>
+    <div>
+      <label>Telefon 1</label>
+      <a class="phone-link" href="tel:{{ employee.phone_primary|tel_link }}">{{ employee.phone_primary }}</a>
+    </div>
+    <div>
+      <label>Telefon 2</label>
+      {% if employee.phone_secondary %}
+      <a class="phone-link" href="tel:{{ employee.phone_secondary|tel_link }}">{{ employee.phone_secondary }}</a>
+      {% else %}
+      <input type="text" readonly value="-">
+      {% endif %}
+    </div>
+  </div>
+  <div class="stats-grid">
+    <article class="stat-card"><p>Yaratilgan buyurtmalar</p><h3>{{ orders_created_count|comma }}</h3></article>
+    <article class="stat-card"><p>Yetkazilgan buyurtmalar</p><h3>{{ orders_delivered_count|comma }}</h3></article>
+  </div>
+  <div class="chart-grid">
+    <div class="panel"><h3>Oylar kesimida yaratilgan buyurtmalar</h3><canvas id="empCreatedChart"></canvas></div>
+    <div class="panel"><h3>Oylar kesimida yetkazishlar</h3><canvas id="empDeliveredChart"></canvas></div>
+  </div>
+</section>
+
+<section class="panel">
+  <h3>Faollik</h3>
+  <div class="table-wrap"><table><thead><tr><th>Sana</th><th>Amal turi</th><th>Obyekt</th><th>Xabar</th></tr></thead><tbody>
+  {% for l in logs %}<tr><td>{{ l.created_at|date:'d.m.Y H:i' }}</td><td>{{ l.get_action_type_display }}</td><td>{{ l.object_label }}</td><td>{{ l.message }}</td></tr>{% empty %}<tr><td colspan="4">Log yo'q</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labels = {{ month_labels|safe }};
+const createdVals = {{ created_values|safe }};
+const deliveredVals = {{ delivered_values|safe }};
+new Chart(document.getElementById('empCreatedChart'), {type:'bar',data:{labels,datasets:[{label:'Buyurtmalar',data:createdVals,backgroundColor:'#2487ea'}]}});
+new Chart(document.getElementById('empDeliveredChart'), {type:'line',data:{labels,datasets:[{label:'Yetkazishlar',data:deliveredVals,borderColor:'#16a34a'}]}});
+</script>
+{% endblock %}

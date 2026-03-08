@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load core_extras %}
+
+{% block title %}Yetkazish tafsiloti{% endblock %}
+{% block page_title %}Buyurtma #{{ order.id }} yetkazish{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h3>Buyurtma ma'lumotlari</h3>
+  <p><strong>Do'kon:</strong> {{ order.shop.name }}</p>
+  {% if order.shop.phone_primary %}
+    <p><strong>Telefon:</strong> <a class="phone-link" href="tel:{{ order.shop.phone_primary|tel_link }}">{{ order.shop.phone_primary }}</a></p>
+  {% endif %}
+  <p><strong>Sana:</strong> {{ order.order_date|date:'d.m.Y' }}</p>
+  <p>
+    <strong>Holat:</strong>
+    {% if order.delivery_status == 'delivered' %}
+      <span class="badge badge-status-done">Yetkazildi</span>
+    {% else %}
+      <span class="badge badge-status-new">Yangi</span>
+    {% endif %}
+  </p>
+  {% if google_maps_url or yandex_maps_url %}
+    <div class="order-actions" style="margin-bottom: 10px;">
+      {% if google_maps_url %}<a class="btn btn-light" target="_blank" href="{{ google_maps_url }}">Google xarita bilan ochish</a>{% endif %}
+      {% if yandex_maps_url %}<a class="btn btn-light" target="_blank" href="{{ yandex_maps_url }}">Yandex xarita bilan ochish</a>{% endif %}
+    </div>
+  {% endif %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Mahsulot</th><th>Soni</th><th>Narxi</th><th>Jami</th></tr></thead>
+      <tbody>
+        {% for i in order.items.all %}
+        <tr><td>{{ i.product.name }}</td><td>{{ i.quantity }}</td><td>{{ i.price_at_sale|som }}</td><td>{{ i.total_amount|som }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel form-panel">
+  <h3>Yetkazildi</h3>
+  <form method="post" class="grid-form">
+    {% csrf_token %}
+    <div>
+      <label for="id_delivery_received_amount">Qabul qilingan summa (ixtiyoriy)</label>
+      {{ form.delivery_received_amount }}
+    </div>
+    <div>
+      <label for="id_delivery_note">Izoh (ixtiyoriy)</label>
+      {{ form.delivery_note }}
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'delivery-list' %}" class="btn btn-light">Orqaga</a>
+      {% if order.delivery_status != 'delivered' %}<button class="btn btn-primary" type="submit">Yetkazildi</button>{% endif %}
+    </div>
+  </form>
+</section>
+{% endblock %}

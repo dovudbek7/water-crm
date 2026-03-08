@@ -5,12 +5,16 @@ const viewButtons = document.querySelectorAll('.view-order-btn');
 
 const modalShopName = document.getElementById('modalShopName');
 const modalOrderDate = document.getElementById('modalOrderDate');
+const modalOrderStatus = document.getElementById('modalOrderStatus');
 const modalItemsBody = document.querySelector('#modalItemsTable tbody');
 const modalTotalAmount = document.getElementById('modalTotalAmount');
 const modalPaidAmount = document.getElementById('modalPaidAmount');
 const modalRemainAmount = document.getElementById('modalRemainAmount');
 const modalExportPdf = document.getElementById('modalExportPdf');
 const modalExportExcel = document.getElementById('modalExportExcel');
+const modalMapGoogle = document.getElementById('modalMapGoogle');
+const modalMapYandex = document.getElementById('modalMapYandex');
+const modalNoLocation = document.getElementById('modalNoLocation');
 
 function formatSom(value) {
   return `${Number(value || 0).toLocaleString('en-US')} so'm`;
@@ -49,6 +53,7 @@ async function loadOrder(url) {
 
   modalShopName.value = data.shop_name;
   modalOrderDate.value = data.order_date;
+  modalOrderStatus.value = data.delivery_status_label;
   modalTotalAmount.textContent = formatSom(data.total_amount);
   modalPaidAmount.textContent = formatSom(data.paid_amount);
   modalRemainAmount.textContent = orderBalanceLabel(data.remaining_balance);
@@ -57,6 +62,17 @@ async function loadOrder(url) {
 
   modalExportPdf.href = data.export_pdf_url;
   modalExportExcel.href = data.export_excel_url;
+  if (modalMapGoogle) {
+    modalMapGoogle.style.display = data.google_maps_url ? 'inline-flex' : 'none';
+    modalMapGoogle.href = data.google_maps_url || '#';
+  }
+  if (modalMapYandex) {
+    modalMapYandex.style.display = data.yandex_maps_url ? 'inline-flex' : 'none';
+    modalMapYandex.href = data.yandex_maps_url || '#';
+  }
+  if (modalNoLocation) {
+    modalNoLocation.style.display = data.google_maps_url || data.yandex_maps_url ? 'none' : 'inline';
+  }
 
   if (!data.items.length) {
     modalItemsBody.innerHTML = '<tr><td colspan="4">Mahsulotlar topilmadi.</td></tr>';

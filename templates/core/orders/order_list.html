@@ -10,6 +10,16 @@
   <div class="panel-head wrap-head">
     <form method="get" class="search-inline">
       <input type="text" name="q" placeholder="Buyurtma qidirish..." value="{{ search }}">
+      <select name="sort">
+        <option value="-id" {% if sort == '-id' %}selected{% endif %}>ID (yangi)</option>
+        <option value="id" {% if sort == 'id' %}selected{% endif %}>ID (eski)</option>
+        <option value="-date" {% if sort == '-date' %}selected{% endif %}>Sana (yangi)</option>
+        <option value="date" {% if sort == 'date' %}selected{% endif %}>Sana (eski)</option>
+        <option value="-paid" {% if sort == '-paid' %}selected{% endif %}>To'lov (ko'p)</option>
+        <option value="paid" {% if sort == 'paid' %}selected{% endif %}>To'lov (kam)</option>
+        <option value="-remaining" {% if sort == '-remaining' %}selected{% endif %}>Qoldiq (ko'p)</option>
+        <option value="remaining" {% if sort == 'remaining' %}selected{% endif %}>Qoldiq (kam)</option>
+      </select>
       <button type="submit" class="btn btn-light">Qidirish</button>
     </form>
     <div class="order-actions">
@@ -26,6 +36,7 @@
           <th>Buyurtma ID</th>
           <th>Do'kon nomi</th>
           <th>Sana</th>
+          <th>Holat</th>
           <th>Jami summa</th>
           <th>To'langan summa</th>
           <th>Qoldiq</th>
@@ -38,6 +49,13 @@
             <td>#{{ order.id }}</td>
             <td>{{ order.shop.name }}</td>
             <td>{{ order.order_date|date:'d.m.Y' }}</td>
+            <td>
+              {% if order.delivery_status == 'delivered' %}
+                <span class="badge badge-status-done">Yetkazildi</span>
+              {% else %}
+                <span class="badge badge-status-new">Yangi</span>
+              {% endif %}
+            </td>
             <td>{{ order.total_amount|som }}</td>
             <td>{{ order.paid_amount|som }}</td>
             <td>
@@ -53,14 +71,26 @@
                 <a class="icon-btn sm" href="{% url 'order-update' order.pk %}" title="Tahrirlash">
                   <span class="material-symbols-outlined">edit</span>
                 </a>
+                {% if order.shop.google_map_link %}
+                <a class="icon-btn sm" href="{{ order.shop.google_map_link }}" target="_blank" title="Google xarita">
+                  <span class="material-symbols-outlined">map</span>
+                </a>
+                {% endif %}
+                {% if order.shop.yandex_map_link %}
+                <a class="icon-btn sm" href="{{ order.shop.yandex_map_link }}" target="_blank" title="Yandex xarita">
+                  <span class="material-symbols-outlined">location_on</span>
+                </a>
+                {% endif %}
+                {% if request.user.is_superuser %}
                 <a class="icon-btn sm danger" href="{% url 'order-delete' order.pk %}" title="O'chirish">
                   <span class="material-symbols-outlined">delete</span>
                 </a>
+                {% endif %}
               </div>
             </td>
           </tr>
         {% empty %}
-          <tr><td colspan="7">Buyurtmalar topilmadi.</td></tr>
+          <tr><td colspan="8">Buyurtmalar topilmadi.</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -69,11 +99,11 @@
   {% if page_obj.paginator.num_pages > 1 %}
     <div class="pagination">
       {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}{% if search %}&q={{ search }}{% endif %}" class="btn btn-light">Oldingi</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if search %}&q={{ search }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="btn btn-light">Oldingi</a>
       {% endif %}
       <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
       {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% if search %}&q={{ search }}{% endif %}" class="btn btn-light">Keyingi</a>
+        <a href="?page={{ page_obj.next_page_number }}{% if search %}&q={{ search }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="btn btn-light">Keyingi</a>
       {% endif %}
     </div>
   {% endif %}
@@ -96,6 +126,10 @@
           <label>Sana</label>
           <input id="modalOrderDate" type="text" readonly>
         </div>
+        <div>
+          <label>Holat</label>
+          <input id="modalOrderStatus" type="text" readonly>
+        </div>
       </div>
 
       <div class="table-wrap">
@@ -115,6 +149,9 @@
       <div class="order-actions" style="margin-top:12px;">
         <a id="modalExportPdf" href="#" class="btn btn-light"><span class="material-symbols-outlined">picture_as_pdf</span>PDF yuklash</a>
         <a id="modalExportExcel" href="#" class="btn btn-light"><span class="material-symbols-outlined">table_view</span>Excel yuklash</a>
+        <a id="modalMapGoogle" href="#" class="btn btn-light" target="_blank" style="display:none;">Google xaritada ochish</a>
+        <a id="modalMapYandex" href="#" class="btn btn-light" target="_blank" style="display:none;">Yandex xaritada ochish</a>
+        <span id="modalNoLocation" class="muted-note" style="display:none;">Lokatsiya mavjud emas</span>
       </div>
     </div>
     <div class="custom-modal-footer">

@@ -1,4 +1,5 @@
 from decimal import Decimal, InvalidOperation
+import re
 
 from django import template
 
@@ -116,3 +117,15 @@ def shop_balance_icon(value):
     if amount > 0:
         return '↑'
     return '•'
+
+
+@register.filter
+def tel_link(value):
+    digits = re.sub(r'\D', '', str(value or ''))
+    if not digits:
+        return ''
+    if digits.startswith('998'):
+        return f'+{digits}'
+    if len(digits) == 9:
+        return f'+998{digits}'
+    return f'+{digits}'
