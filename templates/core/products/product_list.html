@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load core_extras %}
+
+{% block title %}Mahsulotlar{% endblock %}
+{% block page_title %}Mahsulotlar{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head">
+    <h3>Mahsulotlar ro'yxati</h3>
+    <a href="{% url 'product-create' %}" class="btn btn-primary">Yangi mahsulot</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Mahsulot nomi</th>
+          <th>Narxi</th>
+          <th>Amallar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.price|som }}</td>
+            <td class="actions">
+              <a class="btn btn-light" href="{% url 'product-update' product.pk %}">Tahrirlash</a>
+              <a class="btn btn-danger" href="{% url 'product-delete' product.pk %}">O'chirish</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3">Hozircha mahsulotlar yo'q.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

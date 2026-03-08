@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Depozitni tahrirlash{% endblock %}
+{% block page_title %}Depozitni tahrirlash{% endblock %}
+
+{% block content %}
+<section class="panel form-panel">
+  <h3>Depozitni tahrirlash</h3>
+  <form method="post" class="grid-form">
+    {% csrf_token %}
+    <div>
+      <label for="id_date">Sana</label>
+      {{ form.date }}
+    </div>
+    <div>
+      <label for="id_amount">Miqdor</label>
+      {{ form.amount }}
+    </div>
+    <div>
+      <label for="id_note">Izoh</label>
+      {{ form.note }}
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'shop-detail' object.shop.pk %}" class="btn btn-light">Bekor qilish</a>
+      <button class="btn btn-primary" type="submit">Saqlash</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

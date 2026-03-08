@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Do'kon formasi{% endblock %}
+{% block page_title %}Do'kon formasi{% endblock %}
+
+{% block content %}
+<section class="panel form-panel">
+  <h3>{% if object %}Do'konni tahrirlash{% else %}Yangi do'kon{% endif %}</h3>
+  <form method="post" class="grid-form">
+    {% csrf_token %}
+    <div>
+      <label for="id_name">Do'kon nomi</label>
+      {{ form.name }}
+      {{ form.name.errors }}
+    </div>
+    <div>
+      <label for="id_address">Manzil</label>
+      {{ form.address }}
+    </div>
+    <div>
+      <label for="id_phone_primary">Telefon 1</label>
+      {{ form.phone_primary }}
+    </div>
+    <div>
+      <label for="id_phone_secondary">Telefon 2</label>
+      {{ form.phone_secondary }}
+    </div>
+    <div>
+      <label for="id_note">Izoh</label>
+      {{ form.note }}
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'shop-list' %}" class="btn btn-light">Bekor qilish</a>
+      <button type="submit" class="btn btn-primary">Saqlash</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/phone_format.js' %}"></script>
+{% endblock %}

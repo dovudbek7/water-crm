@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load core_extras %}
+
+{% block title %}Depozitni o'chirish{% endblock %}
+{% block page_title %}Depozitni o'chirish{% endblock %}
+
+{% block content %}
+<section class="panel form-panel">
+  <h3>Depozitni o'chirish</h3>
+  <p>{{ object.amount|som }} depozitni o'chirmoqchimisiz?</p>
+  <form method="post" class="form-actions">
+    {% csrf_token %}
+    <a href="{% url 'shop-detail' object.shop.pk %}" class="btn btn-light">Yo'q</a>
+    <button class="btn btn-danger" type="submit">Ha, o'chirish</button>
+  </form>
+</section>
+{% endblock %}

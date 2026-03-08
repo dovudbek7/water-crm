@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_extras %}
+
+{% block title %}Buyurtma{% endblock %}
+{% block page_title %}{% if order_obj %}Buyurtma #{{ order_obj.id }} ni tahrirlash{% else %}Buyurtma yaratish{% endif %}{% endblock %}
+
+{% block content %}
+<section class="panel form-panel">
+  <h3>{% if order_obj %}Buyurtmani tahrirlash{% else %}Yangi buyurtma{% endif %}</h3>
+  <form method="post" id="orderForm">
+    {% csrf_token %}
+
+    <div class="grid-form order-top">
+      <div>
+        <label for="id_shop">Do'konni tanlash</label>
+        {{ order_form.shop }}
+      </div>
+      <div>
+        <label>Sana</label>
+        <input type="text" value="{{ today|date:'d.m.Y' }}" readonly>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      {{ formset.management_form }}
+      <table id="itemTable">
+        <thead>
+          <tr>
+            <th>Mahsulot</th>
+            <th>Soni</th>
+            <th>Narxi</th>
+            <th>Jami summa</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="itemRows">
+          {% for form in formset %}
+            <tr class="item-row">
+              <td>{{ form.product }}</td>
+              <td>{{ form.quantity }}</td>
+              <td><input type="text" class="price-input" readonly value="0"></td>
+              <td><input type="text" class="line-total-input" readonly value="0"></td>
+              <td>
+                {{ form.DELETE }}
+                <button class="btn btn-danger btn-sm remove-row" type="button">Olib tashlash</button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if formset.non_form_errors %}
+        <div class="error-list">{{ formset.non_form_errors }}</div>
+      {% endif %}
+    </div>
+
+    <button type="button" id="addRowBtn" class="btn btn-add-product">
+      <span class="material-symbols-outlined">add_circle</span>
+      Yana mahsulot qo'shish
+    </button>
+
+    <div class="grid-form order-bottom">
+      <div>
+        <label for="id_note">Izoh</label>
+        {{ order_form.note }}
+      </div>
+      <div>
+        <label>Jami summa</label>
+        <input type="text" id="grandTotal" readonly value="0 so'm">
+      </div>
+      <div>
+        <label for="id_paid_amount">To'langan summa</label>
+        {{ order_form.paid_amount }}
+      </div>
+      <div>
+        <label>Qoldiq summa</label>
+        <input type="text" id="remainingTotal" readonly value="0 so'm">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href="{% url 'order-list' %}" class="btn btn-light">Bekor qilish</a>
+      <button type="submit" class="btn btn-primary">{% if order_obj %}Yangilash{% else %}Buyurtmani saqlash{% endif %}</button>
+    </div>
+  </form>
+
+  <template id="rowTemplate">
+    <tr class="item-row">
+      <td>__PRODUCT__</td>
+      <td>__QTY__</td>
+      <td><input type="text" class="price-input" readonly value="0"></td>
+      <td><input type="text" class="line-total-input" readonly value="0"></td>
+      <td>
+        __DELETE__
+        <button class="btn btn-danger btn-sm remove-row" type="button">Olib tashlash</button>
+      </td>
+    </tr>
+  </template>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  window.productPrices = {{ product_prices|safe }};
+</script>
+<script src="{% static 'js/order.js' %}"></script>
+{% endblock %}

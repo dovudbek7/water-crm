@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_extras %}
+
+{% block title %}Buyurtmalar{% endblock %}
+{% block page_title %}Buyurtmalar ro'yxati{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head wrap-head">
+    <form method="get" class="search-inline">
+      <input type="text" name="q" placeholder="Buyurtma qidirish..." value="{{ search }}">
+      <button type="submit" class="btn btn-light">Qidirish</button>
+    </form>
+    <div class="order-actions">
+      <a href="{% url 'order-list-export-pdf' %}" class="btn btn-light"><span class="material-symbols-outlined">picture_as_pdf</span>PDF yuklash</a>
+      <a href="{% url 'order-list-export-excel' %}" class="btn btn-light"><span class="material-symbols-outlined">table_view</span>Excel yuklash</a>
+      <a href="{% url 'order-create' %}" class="btn btn-primary"><span class="material-symbols-outlined">add_circle</span>Yangi buyurtma</a>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Buyurtma ID</th>
+          <th>Do'kon nomi</th>
+          <th>Sana</th>
+          <th>Jami summa</th>
+          <th>To'langan summa</th>
+          <th>Qoldiq</th>
+          <th>Amallar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in page_obj %}
+          <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.shop.name }}</td>
+            <td>{{ order.order_date|date:'d.m.Y' }}</td>
+            <td>{{ order.total_amount|som }}</td>
+            <td>{{ order.paid_amount|som }}</td>
+            <td>
+              <span class="badge {{ order.remaining_balance|order_balance_class }}">
+                {{ order.remaining_balance|order_balance_icon }} {{ order.remaining_balance|order_balance_label }}
+              </span>
+            </td>
+            <td>
+              <div class="icon-action-group">
+                <button type="button" class="icon-btn sm view-order-btn" data-detail-url="{% url 'order-detail-json' order.pk %}" title="Ko'rish">
+                  <span class="material-symbols-outlined">visibility</span>
+                </button>
+                <a class="icon-btn sm" href="{% url 'order-update' order.pk %}" title="Tahrirlash">
+                  <span class="material-symbols-outlined">edit</span>
+                </a>
+                <a class="icon-btn sm danger" href="{% url 'order-delete' order.pk %}" title="O'chirish">
+                  <span class="material-symbols-outlined">delete</span>
+                </a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7">Buyurtmalar topilmadi.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if search %}&q={{ search }}{% endif %}" class="btn btn-light">Oldingi</a>
+      {% endif %}
+      <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if search %}&q={{ search }}{% endif %}" class="btn btn-light">Keyingi</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+
+<div id="orderModal" class="custom-modal">
+  <div class="custom-modal-backdrop" id="orderModalCloseBackdrop"></div>
+  <div class="custom-modal-dialog">
+    <div class="custom-modal-header">
+      <h3>Buyurtma tafsilotlari</h3>
+      <button class="icon-btn" id="orderModalClose" type="button"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="custom-modal-body">
+      <div class="grid-form two-cols">
+        <div>
+          <label>Do'kon nomi</label>
+          <input id="modalShopName" type="text" readonly>
+        </div>
+        <div>
+          <label>Sana</label>
+          <input id="modalOrderDate" type="text" readonly>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="modalItemsTable">
+          <thead>
+            <tr>
+              <th>Mahsulot</th>
+              <th>Soni</th>
+              <th>Narxi</th>
+              <th>Jami summa</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="order-actions" style="margin-top:12px;">
+        <a id="modalExportPdf" href="#" class="btn btn-light"><span class="material-symbols-outlined">picture_as_pdf</span>PDF yuklash</a>
+        <a id="modalExportExcel" href="#" class="btn btn-light"><span class="material-symbols-outlined">table_view</span>Excel yuklash</a>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="summary-row"><span>Umumiy summa</span><strong id="modalTotalAmount">0 so'm</strong></div>
+      <div class="summary-row"><span>To'langan summa</span><strong id="modalPaidAmount">0 so'm</strong></div>
+      <div class="summary-row"><span>Qoldiq</span><strong id="modalRemainAmount" class="balance-neutral">• 0 so'm</strong></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/order_list.js' %}"></script>
+{% endblock %}

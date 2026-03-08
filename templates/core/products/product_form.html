@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Mahsulot formasi{% endblock %}
+{% block page_title %}Mahsulot formasi{% endblock %}
+
+{% block content %}
+<section class="panel form-panel">
+  <h3>{% if object %}Mahsulotni tahrirlash{% else %}Yangi mahsulot{% endif %}</h3>
+  <form method="post" class="grid-form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div>
+      <label for="id_name">Mahsulot nomi</label>
+      {{ form.name }}
+      {{ form.name.errors }}
+    </div>
+    <div>
+      <label for="id_price">Narxi (so'm)</label>
+      {{ form.price }}
+      {{ form.price.errors }}
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'product-list' %}" class="btn btn-light">Bekor qilish</a>
+      <button type="submit" class="btn btn-primary">Saqlash</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
