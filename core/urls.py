@@ -18,6 +18,7 @@ from core.views import (
     EmployeeListExportExcelView,
     EmployeeListExportPDFView,
     EmployeeListView,
+    HomeRedirectView,
     LoginPageView,
     OrderCreateView,
     OrderDeleteView,
@@ -53,7 +54,8 @@ urlpatterns = [
     path('logout/', UserLogoutView.as_view(), name='logout'),
     path('profil/', ProfileView.as_view(), name='profile'),
 
-    path('', DashboardView.as_view(), name='dashboard'),
+    path('', HomeRedirectView.as_view(), name='home'),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
 
     path('mahsulotlar/', ProductListView.as_view(), name='product-list'),
     path('mahsulotlar/yangi/', ProductCreateView.as_view(), name='product-create'),
