@@ -36,6 +36,7 @@ from core.export_utils import (
     export_transactions_pdf,
 )
 from core.forms import (
+    AdminLoginForm,
     DeliveryCompleteForm,
     EmployeeCreateForm,
     EmployeeAdminProfileForm,
@@ -65,20 +66,38 @@ class SuperAdminRequiredMixin(AuthRequiredMixin, UserPassesTestMixin):
 class LoginPageView(FormView):
     template_name = 'auth/login.html'
     form_class = LoginForm
-    success_url = reverse_lazy('dashboard')
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect('dashboard' if request.user.is_superuser else 'order-list')
         return super().dispatch(request, *args, **kwargs)
 
-    def form_valid(self, form):
-        login(self.request, form.cleaned_data['user'])
-        if self.request.user.is_superuser:
-            self.success_url = reverse_lazy('dashboard')
-        else:
-            self.success_url = reverse_lazy('order-list')
-        return super().form_valid(form)
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.setdefault('admin_form', AdminLoginForm(prefix='admin'))
+        ctx.setdefault('open_admin_box', False)
+        return ctx
+
+    def post(self, request, *args, **kwargs):
+        login_type = request.POST.get('login_type', 'employee')
+        if login_type == 'admin':
+            emp_form = LoginForm()
+            admin_form = AdminLoginForm(request.POST, prefix='admin')
+            if admin_form.is_valid():
+                login(request, admin_form.cleaned_data['user'])
+                return redirect('dashboard')
+            return self.render_to_response(
+                self.get_context_data(form=emp_form, admin_form=admin_form, open_admin_box=True)
+            )
+
+        form = LoginForm(request.POST)
+        admin_form = AdminLoginForm(prefix='admin')
+        if form.is_valid():
+            login(request, form.cleaned_data['user'])
+            return redirect('dashboard' if request.user.is_superuser else 'order-list')
+        return self.render_to_response(
+            self.get_context_data(form=form, admin_form=admin_form, open_admin_box=False)
+        )
 
 
 class UserLogoutView(LogoutView):
