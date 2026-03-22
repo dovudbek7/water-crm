@@ -30,6 +30,7 @@ if (mapEl && dataEl && typeof L !== 'undefined') {
   const shops = raw.map((s) => ({
     id: s.id,
     name: s.name,
+    info: s.info,
     lat: Number(s.latitude),
     lng: Number(s.longitude),
   })).filter((s) => !Number.isNaN(s.lat) && !Number.isNaN(s.lng));
@@ -41,12 +42,15 @@ if (mapEl && dataEl && typeof L !== 'undefined') {
 
   const bounds = [];
   shops.forEach((shop) => {
-    const g = `https://www.google.com/maps/dir/?api=1&destination=${shop.lat},${shop.lng}&travelmode=driving`;
+    const g = `https://www.google.com/maps/dir/?api=1&destination=${shop.lat},${shop.lng}&travelmode=driving&dir_action=navigate`;
     const y = `https://yandex.com/maps/?rtext=~${shop.lat},${shop.lng}&rtt=auto&ll=${shop.lng}%2C${shop.lat}&z=16&pt=${shop.lng},${shop.lat},pm2rdm`;
     L.marker([shop.lat, shop.lng]).addTo(map).bindPopup(
-      `<div><strong>${shop.name}</strong><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
-        <a class="btn btn-light btn-sm" target="_blank" href="${g}">Google Maps bilan ochish</a>
-        <a class="btn btn-light btn-sm" target="_blank" href="${y}">Yandex Maps bilan ochish</a>
+      `<div style="min-width:220px;">
+        <strong>${shop.name}</strong>
+        <div style="margin-top:6px;color:#6b7280;">${shop.info || "Qo'shimcha ma'lumot yo'q"}</div>
+        <div style="margin-top:10px;">
+          <button type="button" class="btn btn-light btn-sm js-popup-location" data-google-url="${g}" data-yandex-url="${y}">Lokatsiyani ochish</button>
+        </div>
       </div></div>`
     );
     bounds.push([shop.lat, shop.lng]);
@@ -55,6 +59,16 @@ if (mapEl && dataEl && typeof L !== 'undefined') {
   if (bounds.length) {
     map.fitBounds(bounds, { padding: [30, 30] });
   }
+
+  map.on('popupopen', (event) => {
+    const button = event.popup.getElement()?.querySelector('.js-popup-location');
+    if (!button) return;
+    button.addEventListener('click', () => {
+      if (window.openLocationSheet) {
+        window.openLocationSheet(button.dataset.googleUrl || '', button.dataset.yandexUrl || '');
+      }
+    });
+  });
 }
 </script>
 {% endblock %}

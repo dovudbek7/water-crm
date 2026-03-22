@@ -1,4 +1,5 @@
 import calendar
+import json
 from datetime import date, datetime, time
 from decimal import Decimal
 
@@ -17,8 +18,10 @@ from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DeleteView, FormView, ListView, TemplateView, UpdateView
+from django.views.decorators.csrf import csrf_exempt
 
 from core.export_utils import (
     export_analytics_excel,
@@ -57,6 +60,7 @@ from core.telegram_utils import (
     format_order_delivered_message,
     generate_telegram_token,
     send_telegram_channel_message,
+    validate_telegram_init_data,
 )
 
 
@@ -164,6 +168,14 @@ def _map_urls_from_shop(shop):
     if shop.map_link:
         return shop.map_link, ''
     return '', ''
+
+
+def _shop_marker_info(shop):
+    if shop.address:
+        return shop.address
+    if shop.note:
+        return shop.note[:80]
+    return "Qo'shimcha ma'lumot yo'q"
 
 
 def _val(v):
@@ -403,6 +415,7 @@ class ShopMapView(AuthRequiredMixin, TemplateView):
             {
                 'id': s.id,
                 'name': s.name,
+                'info': _shop_marker_info(s),
                 'latitude': float(s.latitude),
                 'longitude': float(s.longitude),
             }
@@ -1047,6 +1060,7 @@ class TelegramDisconnectView(AuthRequiredMixin, View):
         return redirect('profile')
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class TelegramConnectConfirmView(View):
     def post(self, request, token):
         if settings.TELEGRAM_BOT_SECRET and request.headers.get('X-Telegram-Secret') != settings.TELEGRAM_BOT_SECRET:
@@ -1061,7 +1075,16 @@ class TelegramConnectConfirmView(View):
         profile.telegram_chat_id = chat_id
         profile.telegram_username = username
         profile.telegram_connected_at = timezone.now()
-        profile.save(update_fields=['telegram_chat_id', 'telegram_username', 'telegram_connected_at', 'updated_at'])
+        profile.telegram_link_token = generate_telegram_token()
+        profile.save(
+            update_fields=[
+                'telegram_chat_id',
+                'telegram_username',
+                'telegram_connected_at',
+                'telegram_link_token',
+                'updated_at',
+            ]
+        )
         return JsonResponse({'ok': True, 'message': 'Akkaunt ulandi.'})
 
 
@@ -1081,6 +1104,47 @@ class TelegramMiniAppStatusView(View):
                 'message': 'Akkaunt topildi.',
                 'user_id': profile.user_id,
                 'name': profile.user.get_full_name() or profile.user.username,
+            }
+        )
+
+
+class TelegramMiniAppView(TemplateView):
+    template_name = 'core/profile/telegram_mini_app.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['mini_app_auth_url'] = reverse('telegram-mini-app-auth')
+        return ctx
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TelegramMiniAppAuthView(View):
+    def post(self, request):
+        init_data = (request.POST.get('init_data') or '').strip()
+        is_valid, payload = validate_telegram_init_data(init_data)
+        if not is_valid:
+            return JsonResponse({'ok': False, 'message': 'Siz tizimga ulanmagansiz.'}, status=403)
+
+        user_payload = payload.get('user', '')
+        try:
+            user_data = json.loads(user_payload) if user_payload else {}
+        except Exception:
+            user_data = {}
+
+        chat_id = str(user_data.get('id') or '').strip()
+        if not chat_id:
+            return JsonResponse({'ok': False, 'message': 'Telegram foydalanuvchisi topilmadi.'}, status=400)
+
+        profile = UserProfile.objects.filter(telegram_chat_id=chat_id).select_related('user').first()
+        if not profile:
+            return JsonResponse({'ok': False, 'message': 'Siz tizimga ulanmagansiz.'}, status=403)
+
+        login(request, profile.user)
+        return JsonResponse(
+            {
+                'ok': True,
+                'message': 'Akkaunt topildi.',
+                'redirect_url': reverse('dashboard' if profile.user.is_superuser else 'order-list'),
             }
         )
 

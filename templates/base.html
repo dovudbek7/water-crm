@@ -30,6 +30,7 @@
         <a href="{% url 'product-list' %}" class="menu-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">inventory_2</span>Mahsulotlar</a>
         {% endif %}
         <a href="{% url 'shop-list' %}" class="menu-link {% if 'shop' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">storefront</span>Do'konlar</a>
+        <a href="{% url 'shop-map' %}" class="menu-link {% if request.resolver_match.url_name == 'shop-map' %}active{% endif %}"><span class="material-symbols-outlined">map</span>Do'konlar xaritasi</a>
         <a href="{% url 'order-list' %}" class="menu-link {% if 'order' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">shopping_cart</span>Buyurtmalar</a>
         <a href="{% url 'delivery-list' %}" class="menu-link {% if 'delivery' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">local_shipping</span>Yetkazish</a>
         {% if request.user.is_superuser %}
