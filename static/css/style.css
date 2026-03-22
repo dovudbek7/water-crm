@@ -464,6 +464,13 @@ textarea:focus {
   padding: 5px 10px;
 }
 
+.badge-status-closed {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 999px;
+  padding: 5px 10px;
+}
+
 .badge-danger,
 .badge.balance-down {
   background: #fee2e2;
@@ -611,6 +618,26 @@ input[type='checkbox'][name$='-DELETE'] {
   font-weight: 700;
 }
 
+.entity-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+}
+
+.avatar-thumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 38px;
+}
+
+.placeholder-avatar {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
 .image-thumb {
   width: 100%;
   max-width: 220px;
@@ -644,6 +671,76 @@ input[type='checkbox'][name$='-DELETE'] {
   position: absolute;
   top: 16px;
   right: 16px;
+}
+
+.map-picker-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.map-picker {
+  height: 320px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.order-line-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mobile-inline-label {
+  display: none;
+}
+
+.compact-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: #155e9d;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.bottom-sheet {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 110;
+}
+
+.bottom-sheet.show {
+  display: block;
+}
+
+.bottom-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.38);
+}
+
+.bottom-sheet-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  padding: 18px;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.12);
+}
+
+.sheet-actions {
+  display: grid;
+  gap: 10px;
 }
 
 .map-mode-grid {
@@ -767,5 +864,38 @@ input[type='checkbox'][name$='-DELETE'] {
 
   .map-mode-grid {
     grid-template-columns: 1fr;
+  }
+
+  #itemTable thead {
+    display: none;
+  }
+
+  #itemTable tbody,
+  #itemTable tr,
+  #itemTable td {
+    display: block;
+    width: 100%;
+  }
+
+  #itemTable tr.item-row {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+    background: #fff;
+    margin-bottom: 10px;
+  }
+
+  #itemTable tr.item-row td {
+    padding: 0;
+    border-bottom: 0;
+    margin-bottom: 10px;
+  }
+
+  .mobile-inline-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
   }
 }

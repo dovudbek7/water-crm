@@ -4,6 +4,10 @@
 {% block title %}Do'kon formasi{% endblock %}
 {% block page_title %}Do'kon formasi{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
 {% block content %}
 <section class="panel form-panel">
   <h3>{% if object %}Do'konni tahrirlash{% else %}Yangi do'kon{% endif %}</h3>
@@ -34,13 +38,23 @@
       <label for="id_photo">Do'kon rasmi</label>
       {{ form.photo }}
     </div>
-    <div>
-      <label for="id_google_map_link">Google xarita havolasi</label>
-      {{ form.google_map_link }}
-    </div>
-    <div>
-      <label for="id_yandex_map_link">Yandex xarita havolasi</label>
-      {{ form.yandex_map_link }}
+    {{ form.latitude }}
+    {{ form.longitude }}
+    <div style="grid-column: 1 / -1;">
+      <label>Lokatsiya tanlash</label>
+      <div class="map-picker-card">
+        <div class="map-toolbar">
+          <button type="button" class="btn btn-light" id="mapCurrentLocation">Joriy joylashuv</button>
+          <span id="mapLocationText" class="muted-note">
+            {% if form.instance.latitude and form.instance.longitude %}
+              Tanlangan nuqta: {{ form.instance.latitude }}, {{ form.instance.longitude }}
+            {% else %}
+              Xaritadan nuqta tanlang
+            {% endif %}
+          </span>
+        </div>
+        <div id="mapPicker" class="map-picker"></div>
+      </div>
     </div>
     <div class="form-actions">
       <a href="{% url 'shop-list' %}" class="btn btn-light">Bekor qilish</a>
@@ -51,5 +65,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="{% static 'js/phone_format.js' %}"></script>
+<script src="{% static 'js/shop_map.js' %}"></script>
 {% endblock %}

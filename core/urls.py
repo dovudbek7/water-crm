@@ -45,6 +45,10 @@ from core.views import (
     ShopListView,
     ShopTransactionExportExcelView,
     ShopTransactionExportPDFView,
+    TelegramConnectConfirmView,
+    TelegramDisconnectView,
+    TelegramLinkGenerateView,
+    TelegramMiniAppStatusView,
     ShopUpdateView,
     UserLogoutView,
 )
@@ -53,6 +57,10 @@ urlpatterns = [
     path('login/', LoginPageView.as_view(), name='login'),
     path('logout/', UserLogoutView.as_view(), name='logout'),
     path('profil/', ProfileView.as_view(), name='profile'),
+    path('profil/telegram-link/', TelegramLinkGenerateView.as_view(), name='telegram-link-generate'),
+    path('profil/telegram-disconnect/', TelegramDisconnectView.as_view(), name='telegram-disconnect'),
+    path('telegram/connect/<str:token>/confirm/', TelegramConnectConfirmView.as_view(), name='telegram-connect-confirm'),
+    path('telegram/mini-app/status/', TelegramMiniAppStatusView.as_view(), name='telegram-mini-app-status'),
 
     path('', HomeRedirectView.as_view(), name='home'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),

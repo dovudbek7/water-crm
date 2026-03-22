@@ -84,9 +84,26 @@
     <img id="imageViewerImage" src="" alt="Rasm">
   </div>
 
+  <div id="locationSheet" class="bottom-sheet">
+    <div class="bottom-sheet-backdrop" id="locationSheetBackdrop"></div>
+    <div class="bottom-sheet-card">
+      <div class="panel-head">
+        <h3>Lokatsiyani ochish</h3>
+        <button type="button" class="icon-btn" id="locationSheetClose">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="sheet-actions">
+        <a id="locationSheetGoogle" href="#" target="_blank" class="btn btn-light">Google xaritada ochish</a>
+        <a id="locationSheetYandex" href="#" target="_blank" class="btn btn-light">Yandex xaritada ochish</a>
+      </div>
+    </div>
+  </div>
+
   <script src="{% static 'js/main.js' %}"></script>
   <script src="{% static 'js/phone_format.js' %}"></script>
   <script src="{% static 'js/image_viewer.js' %}"></script>
+  <script src="{% static 'js/location_picker.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

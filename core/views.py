@@ -5,6 +5,7 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import update_session_auth_hash
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LogoutView
 from django.core.paginator import Paginator
@@ -49,6 +50,14 @@ from core.forms import (
     UserProfileForm,
 )
 from core.models import ActionLog, Employee, Order, OrderItem, Product, Shop, ShopDeposit, UserProfile
+from core.telegram_utils import (
+    build_telegram_connect_link,
+    format_order_closed_message,
+    format_order_created_message,
+    format_order_delivered_message,
+    generate_telegram_token,
+    send_telegram_channel_message,
+)
 
 
 class AuthRequiredMixin(LoginRequiredMixin):
@@ -121,6 +130,16 @@ def permission_denied_view(request, exception=None):
     return render(request, '403.html', {'home_url': home_url}, status=403)
 
 
+def page_not_found_view(request, exception=None):
+    if request.user.is_authenticated and request.user.is_superuser:
+        home_url = reverse('dashboard')
+    elif request.user.is_authenticated:
+        home_url = reverse('order-list')
+    else:
+        home_url = reverse('login')
+    return render(request, '404.html', {'home_url': home_url}, status=404)
+
+
 def log_action(user, action_type, object_label, message):
     employee = user.employee_profile if hasattr(user, 'employee_profile') else None
     ActionLog.objects.create(
@@ -135,16 +154,11 @@ def log_action(user, action_type, object_label, message):
 def _map_urls_from_shop(shop):
     if not shop:
         return '', ''
-    google = (shop.google_map_link or '').strip()
-    yandex = (shop.yandex_map_link or '').strip()
-    if google or yandex:
-        return google, yandex
-    # Eski ma'lumotlar bo'lsa, orqaga moslik uchun fallback.
     if shop.latitude is not None and shop.longitude is not None:
         lat = str(shop.latitude)
         lng = str(shop.longitude)
         return (
-            f'https://www.google.com/maps/dir/?api=1&destination={lat},{lng}&travelmode=driving',
+            f'https://www.google.com/maps/dir/?api=1&destination={lat},{lng}&travelmode=driving&dir_action=navigate',
             f'https://yandex.com/maps/?rtext=~{lat},{lng}&rtt=auto&ll={lng}%2C{lat}&z=16&pt={lng},{lat},pm2rdm',
         )
     if shop.map_link:
@@ -406,7 +420,7 @@ class ShopCreateView(AuthRequiredMixin, CreateView):
     def form_valid(self, form):
         messages.success(self.request, "Do'kon muvaffaqiyatli qo'shildi.")
         response = super().form_valid(form)
-        _log_create(self.request.user, self.object, ['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'google_map_link', 'yandex_map_link'])
+        _log_create(self.request.user, self.object, ['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'latitude', 'longitude'])
         return response
 
 
@@ -417,9 +431,9 @@ class ShopUpdateView(AuthRequiredMixin, UpdateView):
     success_url = reverse_lazy('shop-list')
 
     def form_valid(self, form):
-        before = model_to_dict(self.get_object(), fields=['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'google_map_link', 'yandex_map_link'])
+        before = model_to_dict(self.get_object(), fields=['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'latitude', 'longitude'])
         response = super().form_valid(form)
-        after = model_to_dict(self.object, fields=['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'google_map_link', 'yandex_map_link'])
+        after = model_to_dict(self.object, fields=['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'latitude', 'longitude'])
         _log_update(self.request.user, self.object, before, after)
         messages.success(self.request, "Do'kon ma'lumotlari yangilandi.")
         return response
@@ -432,7 +446,7 @@ class ShopDeleteView(SuperAdminRequiredMixin, DeleteView):
 
     def form_valid(self, form):
         obj = self.get_object()
-        snapshot = model_to_dict(obj, fields=['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'google_map_link', 'yandex_map_link'])
+        snapshot = model_to_dict(obj, fields=['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'latitude', 'longitude'])
         _log_delete(self.request.user, 'Shop', str(obj), snapshot)
         messages.success(self.request, "Do'kon o'chirildi.")
         return super().form_valid(form)
@@ -585,6 +599,7 @@ class OrderCreateView(AuthRequiredMixin, View):
             order = save_order_with_items(order_form, formset, request.user)
             messages.success(request, f'Buyurtma #{order.id} muvaffaqiyatli saqlandi.')
             _log_create(request.user, order, ['shop_id', 'order_date', 'order_type', 'total_amount', 'paid_amount', 'note'])
+            send_telegram_channel_message(format_order_created_message(order))
             return redirect('order-list')
 
         context = self._build_context(order_form, formset, None)
@@ -795,13 +810,23 @@ class DeliveryDetailView(AuthRequiredMixin, View):
         order = get_object_or_404(Order, pk=pk, order_type=Order.ORDER_TYPE_DELIVERY)
         before = model_to_dict(order, fields=['delivery_status', 'delivery_received_amount', 'delivery_note', 'courier_id', 'delivered_at'])
         form = DeliveryCompleteForm(request.POST, instance=order)
+        action = request.POST.get('delivery_action', 'delivered')
         if form.is_valid():
             order = form.save(commit=False)
-            order.delivery_status = Order.DELIVERY_DONE
             order.courier = request.user
             order.delivered_at = timezone.now()
+            if action == 'closed':
+                order.delivery_status = Order.DELIVERY_CLOSED
+            else:
+                order.delivery_status = Order.DELIVERY_DONE
             order.save(update_fields=['delivery_received_amount', 'delivery_note', 'delivery_status', 'courier', 'delivered_at'])
-            messages.success(request, f'Buyurtma #{order.id} yetkazilgan deb belgilandi.')
+            if order.delivery_status == Order.DELIVERY_CLOSED:
+                messages.success(request, f'Buyurtma #{order.id} yopiq deb belgilandi.')
+                send_telegram_channel_message(format_order_closed_message(order))
+            else:
+                messages.success(request, f'Buyurtma #{order.id} yetkazilgan deb belgilandi.')
+                courier_name = request.user.get_full_name() or request.user.username
+                send_telegram_channel_message(format_order_delivered_message(order, courier_name))
             after = model_to_dict(order, fields=['delivery_status', 'delivery_received_amount', 'delivery_note', 'courier_id', 'delivered_at'])
             _log_update(request.user, order, before, after)
             return redirect('delivery-list')
@@ -990,12 +1015,82 @@ class ActivityLogDetailJsonView(SuperAdminRequiredMixin, View):
         )
 
 
+class TelegramLinkGenerateView(AuthRequiredMixin, View):
+    def post(self, request):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        profile.telegram_link_token = generate_telegram_token()
+        profile.save(update_fields=['telegram_link_token', 'updated_at'])
+        connect_link = build_telegram_connect_link(profile.telegram_link_token)
+        if not connect_link:
+            messages.error(request, 'Telegram bot hali sozlanmagan.')
+            return redirect('profile')
+        return redirect(connect_link)
+
+
+class TelegramDisconnectView(AuthRequiredMixin, View):
+    def post(self, request):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        profile.telegram_chat_id = ''
+        profile.telegram_username = ''
+        profile.telegram_connected_at = None
+        profile.telegram_link_token = generate_telegram_token()
+        profile.save(
+            update_fields=[
+                'telegram_chat_id',
+                'telegram_username',
+                'telegram_connected_at',
+                'telegram_link_token',
+                'updated_at',
+            ]
+        )
+        messages.success(request, 'Telegram ulanishi bekor qilindi.')
+        return redirect('profile')
+
+
+class TelegramConnectConfirmView(View):
+    def post(self, request, token):
+        if settings.TELEGRAM_BOT_SECRET and request.headers.get('X-Telegram-Secret') != settings.TELEGRAM_BOT_SECRET:
+            return JsonResponse({'ok': False, 'message': 'Maxfiy kalit noto‘g‘ri.'}, status=403)
+
+        profile = get_object_or_404(UserProfile, telegram_link_token=token)
+        chat_id = (request.POST.get('chat_id') or '').strip()
+        username = (request.POST.get('username') or '').strip()
+        if not chat_id:
+            return JsonResponse({'ok': False, 'message': 'chat_id topilmadi.'}, status=400)
+
+        profile.telegram_chat_id = chat_id
+        profile.telegram_username = username
+        profile.telegram_connected_at = timezone.now()
+        profile.save(update_fields=['telegram_chat_id', 'telegram_username', 'telegram_connected_at', 'updated_at'])
+        return JsonResponse({'ok': True, 'message': 'Akkaunt ulandi.'})
+
+
+class TelegramMiniAppStatusView(View):
+    def get(self, request):
+        chat_id = (request.GET.get('chat_id') or '').strip()
+        if not chat_id:
+            return JsonResponse({'connected': False, 'message': 'Siz tizimga ulanmagansiz.'}, status=401)
+
+        profile = UserProfile.objects.filter(telegram_chat_id=chat_id).select_related('user').first()
+        if not profile:
+            return JsonResponse({'connected': False, 'message': 'Siz tizimga ulanmagansiz.'}, status=404)
+
+        return JsonResponse(
+            {
+                'connected': True,
+                'message': 'Akkaunt topildi.',
+                'user_id': profile.user_id,
+                'name': profile.user.get_full_name() or profile.user.username,
+            }
+        )
+
+
 class ProfileView(AuthRequiredMixin, View):
     template_name = 'core/profile/profile.html'
 
     def get(self, request):
         form, is_employee = self._build_form(request.user)
-        return render(request, self.template_name, {'form': form, 'is_employee': is_employee})
+        return render(request, self.template_name, self._context(form, is_employee, request.user))
 
     def post(self, request):
         form, is_employee = self._build_form(request.user, data=request.POST, files=request.FILES)
@@ -1030,7 +1125,7 @@ class ProfileView(AuthRequiredMixin, View):
                 update_session_auth_hash(request, request.user)
             messages.success(request, "Profil ma'lumotlari saqlandi.")
             return redirect('profile')
-        return render(request, self.template_name, {'form': form, 'is_employee': is_employee})
+        return render(request, self.template_name, self._context(form, is_employee, request.user))
 
     def _build_form(self, user, data=None, files=None):
         if hasattr(user, 'employee_profile'):
@@ -1042,6 +1137,21 @@ class ProfileView(AuthRequiredMixin, View):
         profile, _ = UserProfile.objects.get_or_create(user=user)
         form = UserProfileForm(data=data, files=files, instance=profile, user=user, allow_password=True)
         return form, False
+
+    def _context(self, form, is_employee, user):
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        if not profile.telegram_link_token:
+            profile.telegram_link_token = generate_telegram_token()
+            profile.save(update_fields=['telegram_link_token', 'updated_at'])
+        connect_link = build_telegram_connect_link(profile.telegram_link_token) if profile and profile.telegram_link_token else ''
+        return {
+            'form': form,
+            'is_employee': is_employee,
+            'telegram_profile': profile,
+            'telegram_connect_link': connect_link,
+            'telegram_bot_username': settings.TELEGRAM_BOT_USERNAME,
+            'telegram_mini_app_url': settings.TELEGRAM_MINI_APP_URL,
+        }
 
 
 def save_order_with_items(order_form, formset, user):
