@@ -1,18 +1,22 @@
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-change-me'
-DEBUG = True
-# ALLOWED_HOSTS = ["https://watercrm.pythonanywhere.com", 
-#     "localhost",
-#     "https://b55e-2a05-45c2-108f-ca00-d49a-bbe2-86f2-cc6e.ngrok-free.app"
-# ]
-ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS = [
-    "https://watercrm.pythonanywhere.com",
-    "https://b55e-2a05-45c2-108f-ca00-d49a-bbe2-86f2-cc6e.ngrok-free.app"
-]
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key-for-dev')
+
+# DEBUG ni bool tipiga o'tkazish (env dan string bo'lib keladi)
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# Vergul bilan yozilgan hostlarni listga aylantirish
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+
+# CSRF uchun ham xuddi shunday
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+# ----------------------------------
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
