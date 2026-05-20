@@ -48,7 +48,7 @@ def send_message(chat_id, text, reply_markup=None):
 def _confirm_connect(token, chat_id, username):
     base_url = _site_base_url()
     if not base_url:
-        return False, "TELEGRAM_MINI_APP_URL sozlanmagan."
+        return False, "TELEGRAM_MINI_APP_URL созланмаган."
 
     url = f"{base_url}/telegram/connect/{token}/confirm/"
     payload = parse.urlencode({'chat_id': chat_id, 'username': username or ''}).encode()
@@ -59,15 +59,15 @@ def _confirm_connect(token, chat_id, username):
     try:
         with request.urlopen(req, timeout=10) as response:
             data = json.loads(response.read().decode('utf-8'))
-            return bool(data.get('ok')), data.get('message', 'Akkaunt ulandi.')
+            return bool(data.get('ok')), data.get('message', 'Аккаунт уланди.')
     except error.HTTPError as exc:
         try:
             body = json.loads(exc.read().decode('utf-8'))
-            return False, body.get('message', "Ulashda xatolik yuz berdi.")
+            return False, body.get('message', "Улашда хатолик юз берди.")
         except Exception:
             return False, f"Backend xatoligi: {exc.code}"
     except (error.URLError, TimeoutError, ValueError):
-        return False, "Backend bilan aloqa qilib bo'lmadi."
+        return False, "Backend билан алоқа қилиб бўлмади."
 
 
 def _main_keyboard():
@@ -77,7 +77,7 @@ def _main_keyboard():
         'inline_keyboard': [
             [
                 {
-                    'text': 'Mini Appni ochish',
+                    'text': 'Mini Appни очиш',
                     'web_app': {'url': MINI_APP_URL},
                 }
             ]
@@ -102,7 +102,7 @@ def _handle_start(message):
         if ok:
             send_message(
                 chat_id,
-                "Akkaunt muvaffaqiyatli ulandi.\nEndi Telegram orqali tizimdan foydalanishingiz mumkin.",
+                "Аккаунт муваффақиятли уланди.\nЭнди Telegram орқали тизимдан фойдаланишингиз мумкин.",
                 reply_markup=_main_keyboard(),
             )
         else:
@@ -111,9 +111,9 @@ def _handle_start(message):
 
     send_message(
         chat_id,
-        "Suv Savdo Tizimi botiga xush kelibsiz.\n"
-        "Akkauntni ulash uchun saytdagi `Telegram ulash` tugmasini bosing.\n"
-        "Akkaunt ulangan bo'lsa, quyidagi tugma orqali Mini Appni ochishingiz mumkin.",
+        "Сув Савдо Тизими ботига хуш келибсиз.\n"
+        "Аккаунтни улаш учун сайтдаги `Telegram улаш` тугмасини босинг.\n"
+        "Аккаунт уланган бўлса, қуйидаги тугма орқали Mini Appни очишингиз мумкин.",
         reply_markup=_main_keyboard(),
     )
 
@@ -122,9 +122,9 @@ def _handle_miniapp(message):
     chat_id = message['chat']['id']
     markup = _main_keyboard()
     if not markup:
-        send_message(chat_id, "Mini App havolasi sozlanmagan.")
+        send_message(chat_id, "Mini App ҳаволаси созланмаган.")
         return
-    send_message(chat_id, "Mini Appni ochish uchun tugmani bosing.", reply_markup=markup)
+    send_message(chat_id, "Mini Appни очиш uchun tugmani bosing.", reply_markup=markup)
 
 
 def handle_update(update):
@@ -141,7 +141,7 @@ def handle_update(update):
 
 def main():
     if not BOT_TOKEN:
-        raise RuntimeError("TELEGRAM_BOT_TOKEN .env faylida sozlanmagan.")
+        raise RuntimeError("TELEGRAM_BOT_TOKEN .env файлида созланмаган.")
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
@@ -151,7 +151,7 @@ def main():
         logging.warning('Webhook o‘chirilmadi, davom etyapman.')
 
     offset = None
-    logging.info('Bot polling boshlandi.')
+    logging.info('Бот polling бошланди.')
 
     while True:
         try:
@@ -166,7 +166,7 @@ def main():
             logging.info('Bot to‘xtatildi.')
             break
         except Exception as exc:
-            logging.exception('Bot xatoligi: %s', exc)
+            logging.exception('Бот хатолиги: %s', exc)
             time.sleep(3)
 
 

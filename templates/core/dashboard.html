@@ -2,51 +2,51 @@
 {% load static %}
 {% load core_extras %}
 
-{% block title %}Asosiy panel{% endblock %}
-{% block page_title %}Asosiy panel{% endblock %}
+{% block title %}Асосий панел{% endblock %}
+{% block page_title %}Асосий панел{% endblock %}
 
 {% block content %}
 <section class="stats-grid stats-grid-six">
   <article class="stat-card">
-    <p>Jami do'konlar</p>
+    <p>Жами дўконлар</p>
     <h3>{{ shops_count|comma }}</h3>
   </article>
   <article class="stat-card">
-    <p>Jami mahsulotlar</p>
+    <p>Жами маҳсулотлар</p>
     <h3>{{ products_count|comma }}</h3>
   </article>
   <article class="stat-card">
-    <p>Bu oy savdo summasi</p>
+    <p>Бу ой савдо суммаси</p>
     <h3>{{ month_sales|som }}</h3>
   </article>
   <article class="stat-card danger">
-    <p>Qarzdor do'konlar soni</p>
+    <p>Қарздор дўконлар сони</p>
     <h3>{{ debt_shops_count|comma }}</h3>
   </article>
   <article class="stat-card">
-    <p>Jami qarzdorlik summasi</p>
+    <p>Жами қарздорлик суммаси</p>
     <h3 class="balance-down">↓ -{{ total_debt_amount|som }}</h3>
   </article>
   <article class="stat-card">
-    <p>Jami depozit summasi</p>
+    <p>Жами депозит суммаси</p>
     <h3 class="balance-up">↑ +{{ total_deposit_amount|som }}</h3>
   </article>
 </section>
 
 <section class="chart-grid">
   <div class="panel">
-    <h3>Oylik savdo</h3>
+    <h3>Ойлик савдо</h3>
     <canvas id="monthlySalesChart"></canvas>
   </div>
   <div class="panel">
-    <h3>Eng ko'p sotilgan mahsulotlar</h3>
+    <h3>Енг кўп сотилган маҳсулотлар</h3>
     <canvas id="topProductsChart"></canvas>
   </div>
 </section>
 
 <section class="stats-grid">
   <article class="stat-card">
-    <p>Eng ko'p buyurtma olgan ishchi</p>
+    <p>Енг кўп буюртма олган ишчи</p>
     <h3>
       {% if top_order_taker %}
         {{ top_order_taker }} ({{ top_order_taker.c|comma }})
@@ -56,7 +56,7 @@
     </h3>
   </article>
   <article class="stat-card">
-    <p>Eng ko'p yetkazib bergan kuryer</p>
+    <p>Енг кўп етказиб берган курер</p>
     <h3>
       {% if top_courier %}
         {{ top_courier }} ({{ top_courier.c|comma }})
@@ -68,17 +68,17 @@
 </section>
 
 <section class="panel">
-  <h3>So'nggi buyurtmalar</h3>
+  <h3>Сўнгги буюртмалар</h3>
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
           <th>#</th>
-          <th>Do'kon</th>
-          <th>Sana</th>
-          <th>Jami</th>
-          <th>To'langan</th>
-          <th>Qoldiq</th>
+          <th>Дўкон</th>
+          <th>Сана</th>
+          <th>Жами</th>
+          <th>Тўланган</th>
+          <th>Қолдиқ</th>
         </tr>
       </thead>
       <tbody>
@@ -92,7 +92,7 @@
             <td class="{{ order.remaining_balance|order_balance_class }}">{{ order.remaining_balance|order_balance_icon }} {{ order.remaining_balance|order_balance_label }}</td>
           </tr>
         {% empty %}
-          <tr><td colspan="6">Hozircha buyurtmalar mavjud emas.</td></tr>
+          <tr><td colspan="6">Ҳозирча буюртмалар мавжуд эмас.</td></tr>
         {% endfor %}
       </tbody>
     </table>

@@ -1,28 +1,28 @@
 {% extends 'base.html' %}
 
-{% block title %}Depozitni tahrirlash{% endblock %}
-{% block page_title %}Depozitni tahrirlash{% endblock %}
+{% block title %}Депозитни таҳрирлаш{% endblock %}
+{% block page_title %}Депозитни таҳрирлаш{% endblock %}
 
 {% block content %}
 <section class="panel form-panel">
-  <h3>Depozitni tahrirlash</h3>
+  <h3>Депозитни таҳрирлаш</h3>
   <form method="post" class="grid-form">
     {% csrf_token %}
     <div>
-      <label for="id_date">Sana</label>
+      <label for="id_date">Сана</label>
       {{ form.date }}
     </div>
     <div>
-      <label for="id_amount">Miqdor</label>
+      <label for="id_amount">Миқдор</label>
       {{ form.amount }}
     </div>
     <div>
-      <label for="id_note">Izoh</label>
+      <label for="id_note">Изоҳ</label>
       {{ form.note }}
     </div>
     <div class="form-actions">
-      <a href="{% url 'shop-detail' object.shop.pk %}" class="btn btn-light">Bekor qilish</a>
-      <button class="btn btn-primary" type="submit">Saqlash</button>
+      <a href="{% url 'shop-detail' object.shop.pk %}" class="btn btn-light">Бекор қилиш</a>
+      <button class="btn btn-primary" type="submit">Сақлаш</button>
     </div>
   </form>
 </section>

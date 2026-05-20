@@ -66,12 +66,12 @@ def format_order_created_message(order):
     address = order.shop.address or '-'
     return (
         '<b>#buyurtma</b>\n'
-        f"<b>Do'kon:</b> {order.shop.name}\n"
+        f"<b>Дўкон:</b> {order.shop.name}\n"
         f'<b>Telefon:</b> {phone}\n'
-        f'<b>Manzil:</b> {address}\n'
-        f'<b>Sana:</b> {order.order_date:%d.%m.%Y}\n'
-        f"<b>Jami:</b> {order.total_amount:,.0f} so'm\n"
-        f'<b>Mahsulotlar:</b>{items or "-"}'
+        f'<b>Манзил:</b> {address}\n'
+        f'<b>Сана:</b> {order.order_date:%d.%m.%Y}\n'
+        f"<b>Jami:</b> {order.total_amount:,.0f} сўм\n"
+        f'<b>Маҳсулотlar:</b>{items or "-"}'
     )
 
 
@@ -80,17 +80,17 @@ def format_order_delivered_message(order, courier_name):
     received = order.delivery_received_amount or order.paid_amount
     return (
         '<b>#yetkazildi</b>\n'
-        f"<b>Do'kon:</b> {order.shop.name}\n"
-        f'<b>Kuryer:</b> {courier_name}\n'
+        f"<b>Дўкон:</b> {order.shop.name}\n"
+        f'<b>Курер:</b> {courier_name}\n'
         f'<b>Vaqt:</b> {when}\n'
-        f"<b>Qabul qilingan summa:</b> {received:,.0f} so'm"
+        f"<b>Qabul qilingan summa:</b> {received:,.0f} сўм"
     )
 
 
 def format_order_closed_message(order):
     return (
         '<b>#yopiq</b>\n'
-        f"<b>Do'kon:</b> {order.shop.name}\n"
+        f"<b>Дўкон:</b> {order.shop.name}\n"
         f'<b>Vaqt:</b> {timezone.localtime(timezone.now()):%d.%m.%Y %H:%M}\n'
-        f"<b>Buyurtma:</b> #{order.id}"
+        f"<b>Буюртма:</b> #{order.id}"
     )

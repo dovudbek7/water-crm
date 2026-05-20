@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Регионлар{% endblock %}
+{% block page_title %}Регионлар{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head">
+    <h3>Регионлар рўйхати</h3>
+    <a href="{% url 'region-create' %}" class="btn btn-primary">Янги регион</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Регион номи</th>
+          <th>Дўконлар сони</th>
+          <th>Амаллар</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for region in regions %}
+          <tr>
+            <td><strong>{{ region.name }}</strong></td>
+            <td>{{ region.shops.count }}</td>
+            <td>
+              <div class="icon-action-group">
+                <a class="icon-btn sm" href="{% url 'region-update' region.pk %}" title="Таҳрирлаш"><span class="material-symbols-outlined">edit</span></a>
+                <a class="icon-btn sm danger" href="{% url 'region-delete' region.pk %}" title="Ўчириш"><span class="material-symbols-outlined">delete</span></a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3">Ҳозирча регионлар йўқ.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

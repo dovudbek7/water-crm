@@ -5,7 +5,7 @@ const exportPdfBtn = document.getElementById('analyticsExportPdf');
 const exportExcelBtn = document.getElementById('analyticsExportExcel');
 
 function formatSom(value) {
-  return `${Number(value || 0).toLocaleString('en-US')} so'm`;
+  return `${Number(value || 0).toLocaleString('en-US')} сўм`;
 }
 
 let barChart;

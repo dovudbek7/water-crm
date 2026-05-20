@@ -16,7 +16,7 @@ const modalLocationBtn = document.getElementById('modalLocationBtn');
 const modalNoLocation = document.getElementById('modalNoLocation');
 
 function formatSom(value) {
-  return `${Number(value || 0).toLocaleString('en-US')} so'm`;
+  return `${Number(value || 0).toLocaleString('en-US')} сўм`;
 }
 
 function orderBalanceLabel(value) {
@@ -77,7 +77,7 @@ async function loadOrder(url) {
   }
 
   if (!data.items.length) {
-    modalItemsBody.innerHTML = '<tr><td colspan="4">Mahsulotlar topilmadi.</td></tr>';
+    modalItemsBody.innerHTML = '<tr><td colspan="4">Маҳсулотлар топилмади.</td></tr>';
   } else {
     modalItemsBody.innerHTML = data.items
       .map((item) => `

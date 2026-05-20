@@ -5,13 +5,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Suv Savdo Tizimi{% endblock %}</title>
+  <title>{% block title %}Сув Савдо Тизими{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=5">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -20,23 +20,24 @@
       <div class="brand">
         <div class="brand-icon"><span class="material-symbols-outlined">water_drop</span></div>
         <div>
-          <h1>Suv CRM</h1>
-          <p>Savdo boshqaruvi</p>
+          <h1>Сув CRM</h1>
+          <p>Савдо бошқаруви</p>
         </div>
       </div>
       <nav class="menu">
         {% if request.user.is_superuser %}
-        <a href="{% url 'dashboard' %}" class="menu-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><span class="material-symbols-outlined">dashboard</span>Asosiy panel</a>
-        <a href="{% url 'product-list' %}" class="menu-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">inventory_2</span>Mahsulotlar</a>
+        <a href="{% url 'dashboard' %}" class="menu-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><span class="material-symbols-outlined">dashboard</span>Асосий панел</a>
+        <a href="{% url 'product-list' %}" class="menu-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">inventory_2</span>Маҳсулотлар</a>
+        <a href="{% url 'region-list' %}" class="menu-link {% if 'region' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">map</span>Регионлар</a>
         {% endif %}
-        <a href="{% url 'shop-list' %}" class="menu-link {% if 'shop' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">storefront</span>Do'konlar</a>
-        <a href="{% url 'shop-map' %}" class="menu-link {% if request.resolver_match.url_name == 'shop-map' %}active{% endif %}"><span class="material-symbols-outlined">map</span>Do'konlar xaritasi</a>
-        <a href="{% url 'order-list' %}" class="menu-link {% if 'order' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">shopping_cart</span>Buyurtmalar</a>
-        <a href="{% url 'delivery-list' %}" class="menu-link {% if 'delivery' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">local_shipping</span>Yetkazish</a>
+        <a href="{% url 'shop-list' %}" class="menu-link {% if 'shop' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">storefront</span>Дўконлар</a>
+        <a href="{% url 'shop-map' %}" class="menu-link {% if request.resolver_match.url_name == 'shop-map' %}active{% endif %}"><span class="material-symbols-outlined">map</span>Дўконлар харитаси</a>
+        <a href="{% url 'order-list' %}" class="menu-link {% if 'order' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">shopping_cart</span>Буюртмалар</a>
+        <a href="{% url 'delivery-list' %}" class="menu-link {% if 'delivery' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">local_shipping</span>Етказиш</a>
         {% if request.user.is_superuser %}
-        <a href="{% url 'analytics' %}" class="menu-link {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">bar_chart</span>Analitika</a>
-        <a href="{% url 'employee-list' %}" class="menu-link {% if 'employee' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">groups</span>Xodimlar</a>
-        <a href="{% url 'activity-log-list' %}" class="menu-link {% if 'activity-log' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">history</span>Faollik loglari</a>
+        <a href="{% url 'analytics' %}" class="menu-link {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">bar_chart</span>Аналитика</a>
+        <a href="{% url 'employee-list' %}" class="menu-link {% if 'employee' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">groups</span>Ходимлар</a>
+        <a href="{% url 'activity-log-list' %}" class="menu-link {% if 'activity-log' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">history</span>Фаоллик логлари</a>
         {% endif %}
       </nav>
       <div class="sidebar-footer">
@@ -44,7 +45,7 @@
           <div class="avatar"><span class="material-symbols-outlined">person</span></div>
           <div>
             <strong>{{ request.user.username }}</strong>
-            <p>{% if request.user.is_superuser %}Bosh admin{% else %}Xodim{% endif %}</p>
+            <p>{% if request.user.is_superuser %}Бош админ{% else %}Ходим{% endif %}</p>
           </div>
         </div>
       </div>
@@ -55,9 +56,9 @@
     <div class="content-wrap">
       <header class="topbar">
         <button id="menuBtn" class="icon-btn" type="button"><span class="material-symbols-outlined">menu</span></button>
-        <h2>{% block page_title %}Asosiy panel{% endblock %}</h2>
+        <h2>{% block page_title %}Асосий панел{% endblock %}</h2>
         <div class="topbar-actions">
-          <a class="icon-btn" href="{% url 'profile' %}" title="Profil">
+          <a class="icon-btn" href="{% url 'profile' %}" title="Профил">
             <span class="material-symbols-outlined">account_circle</span>
           </a>
           <form method="post" action="{% url 'logout' %}">
@@ -79,32 +80,32 @@
   </div>
 
   <div id="imageViewerModal" class="image-viewer-modal">
-    <button type="button" class="icon-btn image-viewer-close" id="imageViewerClose" aria-label="Yopish">
+    <button type="button" class="icon-btn image-viewer-close" id="imageViewerClose" aria-label="Ёпиш">
       <span class="material-symbols-outlined">close</span>
     </button>
-    <img id="imageViewerImage" src="" alt="Rasm">
+    <img id="imageViewerImage" src="" alt="Расм">
   </div>
 
   <div id="locationSheet" class="bottom-sheet">
     <div class="bottom-sheet-backdrop" id="locationSheetBackdrop"></div>
     <div class="bottom-sheet-card">
       <div class="panel-head">
-        <h3>Lokatsiyani ochish</h3>
+        <h3>Локацияни очиш</h3>
         <button type="button" class="icon-btn" id="locationSheetClose">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
       <div class="sheet-actions">
-        <a id="locationSheetGoogle" href="#" target="_blank" class="btn btn-light">Google xaritada ochish</a>
-        <a id="locationSheetYandex" href="#" target="_blank" class="btn btn-light">Yandex xaritada ochish</a>
+        <a id="locationSheetGoogle" href="#" target="_blank" class="btn btn-light">Google харитада очиш</a>
+        <a id="locationSheetYandex" href="#" target="_blank" class="btn btn-light">Yandex харитада очиш</a>
       </div>
     </div>
   </div>
 
-  <script src="{% static 'js/main.js' %}"></script>
-  <script src="{% static 'js/phone_format.js' %}"></script>
-  <script src="{% static 'js/image_viewer.js' %}"></script>
-  <script src="{% static 'js/location_picker.js' %}"></script>
+  <script src="{% static 'js/main.js' %}?v=5"></script>
+  <script src="{% static 'js/phone_format.js' %}?v=5"></script>
+  <script src="{% static 'js/image_viewer.js' %}?v=5"></script>
+  <script src="{% static 'js/location_picker.js' %}?v=5"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -2,26 +2,26 @@
 {% load static %}
 {% load core_extras %}
 
-{% block title %}Buyurtma{% endblock %}
-{% block page_title %}{% if order_obj %}Buyurtma #{{ order_obj.id }} ni tahrirlash{% else %}Buyurtma yaratish{% endif %}{% endblock %}
+{% block title %}Буюртма{% endblock %}
+{% block page_title %}{% if order_obj %}Буюртма #{{ order_obj.id }} ни таҳрирлаш{% else %}Буюртма яратиш{% endif %}{% endblock %}
 
 {% block content %}
 <section class="panel form-panel">
-  <h3>{% if order_obj %}Buyurtmani tahrirlash{% else %}Yangi buyurtma{% endif %}</h3>
+  <h3>{% if order_obj %}Буюртмани таҳрирлаш{% else %}Янги буюртма{% endif %}</h3>
   <form method="post" id="orderForm">
     {% csrf_token %}
 
     <div class="grid-form order-top">
       <div>
-        <label for="id_shop">Do'konni tanlash</label>
+        <label for="id_shop">Дўконни танлаш</label>
         {{ order_form.shop }}
       </div>
       <div>
-        <label for="id_order_type">Buyurtma turi</label>
+        <label for="id_order_type">Буюртма тури</label>
         {{ order_form.order_type }}
       </div>
       <div>
-        <label>Sana</label>
+        <label>Сана</label>
         <input type="text" value="{{ today|date:'d.m.Y' }}" readonly>
       </div>
     </div>
@@ -31,10 +31,10 @@
       <table id="itemTable">
         <thead>
           <tr>
-            <th>Mahsulot</th>
-            <th>Soni</th>
-            <th>Narxi</th>
-            <th>Jami summa</th>
+            <th>Маҳсулот</th>
+            <th>Сони</th>
+            <th>Нархи</th>
+            <th>Жами сумма</th>
             <th></th>
           </tr>
         </thead>
@@ -42,23 +42,23 @@
           {% for form in formset %}
             <tr class="item-row">
               <td>
-                <label class="mobile-inline-label">Mahsulot</label>
+                <label class="mobile-inline-label">Маҳсулот</label>
                 {{ form.product }}
               </td>
               <td>
-                <label class="mobile-inline-label">Soni</label>
+                <label class="mobile-inline-label">Сони</label>
                 {{ form.quantity }}
               </td>
               <td>
-                <label class="mobile-inline-label">Narxi</label>
+                <label class="mobile-inline-label">Нархи</label>
                 <div class="order-line-badges">
-                  <span class="compact-badge price-input">0 so'm</span>
+                  <span class="compact-badge price-input">0 сўм</span>
                 </div>
               </td>
               <td>
-                <label class="mobile-inline-label">Jami</label>
+                <label class="mobile-inline-label">Жами</label>
                 <div class="order-line-badges">
-                  <span class="compact-badge line-total-input">0 so'm</span>
+                  <span class="compact-badge line-total-input">0 сўм</span>
                 </div>
               </td>
               <td>
@@ -78,42 +78,42 @@
 
     <button type="button" id="addRowBtn" class="btn btn-add-product">
       <span class="material-symbols-outlined">add_circle</span>
-      Yana mahsulot qo'shish
+      Яна маҳсулот қўшиш
     </button>
 
     <div class="grid-form order-bottom">
       <div>
-        <label for="id_note">Izoh</label>
+        <label for="id_note">Изоҳ</label>
         {{ order_form.note }}
       </div>
       <div>
-        <label>Jami summa</label>
-        <input type="text" id="grandTotal" readonly value="0 so'm">
+        <label>Жами сумма</label>
+        <input type="text" id="grandTotal" readonly value="0 сўм">
       </div>
       <div>
-        <label for="id_paid_amount">To'langan summa</label>
+        <label for="id_paid_amount">Тўланган сумма</label>
         {{ order_form.paid_amount }}
       </div>
       <div>
-        <label>Qoldiq summa</label>
-        <input type="text" id="remainingTotal" readonly value="0 so'm">
+        <label>Қолдиқ сумма</label>
+        <input type="text" id="remainingTotal" readonly value="0 сўм">
       </div>
     </div>
 
     <div class="form-actions">
-      <a href="{% url 'order-list' %}" class="btn btn-light">Bekor qilish</a>
-      <button type="submit" class="btn btn-primary">{% if order_obj %}Yangilash{% else %}Buyurtmani saqlash{% endif %}</button>
+      <a href="{% url 'order-list' %}" class="btn btn-light">Бекор қилиш</a>
+      <button type="submit" class="btn btn-primary">{% if order_obj %}Янгилаш{% else %}Буюртмани сақлаш{% endif %}</button>
     </div>
   </form>
 
   <template id="rowTemplate">
     <tr class="item-row">
-      <td><label class="mobile-inline-label">Mahsulot</label>__PRODUCT__</td>
-      <td><label class="mobile-inline-label">Soni</label>__QTY__</td>
-      <td><label class="mobile-inline-label">Narxi</label><div class="order-line-badges"><span class="compact-badge price-input">0 so'm</span></div></td>
-      <td><label class="mobile-inline-label">Jami</label><div class="order-line-badges"><span class="compact-badge line-total-input">0 so'm</span></div></td>
+      <td><label class="mobile-inline-label">Маҳсулот</label>__ПРОДУCТ__</td>
+      <td><label class="mobile-inline-label">Сони</label>__ҚТЙ__</td>
+      <td><label class="mobile-inline-label">Нархи</label><div class="order-line-badges"><span class="compact-badge price-input">0 сўм</span></div></td>
+      <td><label class="mobile-inline-label">Жами</label><div class="order-line-badges"><span class="compact-badge line-total-input">0 сўм</span></div></td>
       <td>
-        __DELETE__
+        __ДЕЛЕТЕ__
         <button class="icon-btn sm danger remove-row" type="button"><span class="material-symbols-outlined">delete</span></button>
       </td>
     </tr>

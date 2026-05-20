@@ -2,52 +2,52 @@
 {% load static %}
 {% load core_extras %}
 
-{% block title %}Analitika{% endblock %}
-{% block page_title %}Analitika{% endblock %}
+{% block title %}Аналитика{% endblock %}
+{% block page_title %}Аналитика{% endblock %}
 
 {% block content %}
 <section class="panel">
   <div class="panel-head">
-    <h3>Oylik analitika</h3>
+    <h3>Ойлик аналитика</h3>
     <div class="order-actions">
-      <a id="analyticsExportPdf" href="{% url 'analytics-export-pdf' %}?month={{ selected_month }}" class="btn btn-light"><span class="material-symbols-outlined">picture_as_pdf</span>PDF yuklash</a>
-      <a id="analyticsExportExcel" href="{% url 'analytics-export-excel' %}?month={{ selected_month }}" class="btn btn-light"><span class="material-symbols-outlined">table_view</span>Excel yuklash</a>
-      <label for="monthPicker">Oy tanlang</label>
+      <a id="analyticsExportPdf" href="{% url 'analytics-export-pdf' %}?month={{ selected_month }}" class="btn btn-light"><span class="material-symbols-outlined">picture_as_pdf</span>PDF юклаш</a>
+      <a id="analyticsExportExcel" href="{% url 'analytics-export-excel' %}?month={{ selected_month }}" class="btn btn-light"><span class="material-symbols-outlined">table_view</span>Excel юклаш</a>
+      <label for="monthPicker">Ой танланг</label>
       <input type="month" id="monthPicker" value="{{ selected_month }}">
     </div>
   </div>
 
   <div class="stats-grid single-row">
     <article class="stat-card">
-      <p>Bu oy savdo summasi</p>
+      <p>Бу ой савдо суммаси</p>
       <h3 id="monthSalesText">{{ month_sales|som }}</h3>
     </article>
   </div>
 
   <div class="chart-grid analytics-grid">
     <div class="panel">
-      <h3>Mahsulot bo'yicha dona</h3>
+      <h3>Маҳсулот бўйича дона</h3>
       <canvas id="barChart"></canvas>
     </div>
     <div class="panel">
-      <h3>Mahsulot bo'yicha ulush</h3>
+      <h3>Маҳсулот бўйича улуш</h3>
       <canvas id="pieChart"></canvas>
     </div>
     <div class="panel wide">
-      <h3>Kunlik savdo trendi</h3>
+      <h3>Кунлик савдо тренди</h3>
       <canvas id="lineChart"></canvas>
     </div>
   </div>
 
   <div class="panel">
-    <h3>Mahsulotlar sarhisobi</h3>
+    <h3>Маҳсулотлар сарҳисоби</h3>
     <div class="table-wrap">
       <table id="analyticsTable">
         <thead>
           <tr>
-            <th>Mahsulot</th>
-            <th>Sotilgan dona</th>
-            <th>Tushgan pul</th>
+            <th>Маҳсулот</th>
+            <th>Сотилган дона</th>
+            <th>Тушган пул</th>
           </tr>
         </thead>
         <tbody>
@@ -58,7 +58,7 @@
               <td>{{ row.revenue|som }}</td>
             </tr>
           {% empty %}
-            <tr><td colspan="3">Bu oy ma'lumot yo'q.</td></tr>
+            <tr><td colspan="3">Бу ой ма'лумот йўқ.</td></tr>
           {% endfor %}
         </tbody>
       </table>

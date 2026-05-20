@@ -13,3 +13,25 @@ if (menuBtn && sidebar && overlay) {
     overlay.classList.remove('show');
   });
 }
+
+document.querySelectorAll('form[enctype="multipart/form-data"]').forEach((form) => {
+  const fileInputs = Array.from(form.querySelectorAll('input[type="file"]'));
+  if (!fileInputs.length) {
+    return;
+  }
+
+  form.addEventListener('submit', () => {
+    if (form.dataset.uploading === 'true') {
+      return;
+    }
+
+    form.dataset.uploading = 'true';
+
+    const submitButton = form.querySelector('button[type="submit"], input[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.classList.add('btn-loading');
+      submitButton.innerHTML = '<span class="button-spinner" aria-hidden="true"></span><span>Юкланмоқда...</span>';
+    }
+  });
+});

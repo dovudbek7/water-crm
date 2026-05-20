@@ -15,41 +15,54 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
+class Region(TimeStampedModel):
+    name = models.CharField(max_length=120, unique=True, verbose_name='Регион номи')
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'Регион'
+        verbose_name_plural = 'Регионлар'
+
+    def __str__(self):
+        return self.name
+
+
 class Product(TimeStampedModel):
-    name = models.CharField(max_length=120, unique=True, verbose_name='Mahsulot nomi')
+    name = models.CharField(max_length=120, unique=True, verbose_name='Маҳсулот номи')
     price = models.DecimalField(
         max_digits=12,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0'))],
-        verbose_name="Narxi (so'm)",
+        verbose_name="Нархи (сўм)",
     )
 
     class Meta:
         ordering = ('name',)
-        verbose_name = 'Mahsulot'
-        verbose_name_plural = 'Mahsulotlar'
+        verbose_name = 'Маҳсулот'
+        verbose_name_plural = 'Маҳсулотлар'
 
     def __str__(self):
         return self.name
 
 
 class Shop(TimeStampedModel):
-    name = models.CharField(max_length=160, unique=True, verbose_name="Do'kon nomi")
-    address = models.CharField(max_length=255, blank=True, verbose_name='Manzil')
-    phone_primary = models.CharField(max_length=25, blank=True, verbose_name='Telefon 1')
-    phone_secondary = models.CharField(max_length=25, blank=True, verbose_name='Telefon 2')
-    note = models.TextField(blank=True, verbose_name='Izoh')
-    photo = models.FileField(upload_to='shops/photos/', blank=True, null=True, verbose_name='Do‘kon rasmi')
-    map_link = models.URLField(blank=True, verbose_name='Lokatsiya linki (eski)')
-    google_map_link = models.URLField(blank=True, verbose_name='Google xarita havolasi')
-    yandex_map_link = models.URLField(blank=True, verbose_name='Yandex xarita havolasi')
+    name = models.CharField(max_length=160, unique=True, verbose_name="Дўкон номи")
+    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.SET_NULL, related_name='shops', verbose_name='Регион')
+    address = models.CharField(max_length=255, blank=True, verbose_name='Манзил')
+    phone_primary = models.CharField(max_length=25, blank=True, verbose_name='Телефон 1')
+    phone_secondary = models.CharField(max_length=25, blank=True, verbose_name='Телефон 2')
+    note = models.TextField(blank=True, verbose_name='Изоҳ')
+    photo = models.FileField(upload_to='shops/photos/', blank=True, null=True, verbose_name='Дўкон расми')
+    map_link = models.URLField(blank=True, verbose_name='Локация линқи (эски)')
+    google_map_link = models.URLField(blank=True, verbose_name='Google харита ҳаволаси')
+    yandex_map_link = models.URLField(blank=True, verbose_name='Yandex харита ҳаволаси')
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     class Meta:
         ordering = ('name',)
-        verbose_name = "Do'kon"
-        verbose_name_plural = "Do'konlar"
+        verbose_name = "Дўкон"
+        verbose_name_plural = "Дўконлар"
 
     def __str__(self):
         return self.name
@@ -74,32 +87,32 @@ class Order(TimeStampedModel):
     ORDER_TYPE_PICKUP = 'pickup'
     ORDER_TYPE_DELIVERY = 'delivery'
     ORDER_TYPE_CHOICES = (
-        (ORDER_TYPE_PICKUP, 'Zavoddan olib ketish'),
-        (ORDER_TYPE_DELIVERY, 'Yetkazib berish'),
+        (ORDER_TYPE_PICKUP, 'Заводдан олиб кетиш'),
+        (ORDER_TYPE_DELIVERY, 'Етказиб бериш'),
     )
 
     DELIVERY_NEW = 'new'
     DELIVERY_DONE = 'delivered'
     DELIVERY_CLOSED = 'closed'
     DELIVERY_STATUS_CHOICES = (
-        (DELIVERY_NEW, 'Yangi'),
-        (DELIVERY_DONE, 'Yetkazildi'),
-        (DELIVERY_CLOSED, 'Yopiq'),
+        (DELIVERY_NEW, 'Янги'),
+        (DELIVERY_DONE, 'Етказилди'),
+        (DELIVERY_CLOSED, 'Ёпиқ'),
     )
 
-    shop = models.ForeignKey(Shop, related_name='orders', on_delete=models.PROTECT, verbose_name="Do'kon")
-    order_date = models.DateField(default=timezone.localdate, verbose_name='Sana')
+    shop = models.ForeignKey(Shop, related_name='orders', on_delete=models.PROTECT, verbose_name="Дўкон")
+    order_date = models.DateField(default=timezone.localdate, verbose_name='Сана')
     order_type = models.CharField(
         max_length=20,
         choices=ORDER_TYPE_CHOICES,
         default=ORDER_TYPE_PICKUP,
-        verbose_name='Buyurtma turi',
+        verbose_name='Буюртма тури',
     )
     delivery_status = models.CharField(
         max_length=20,
         choices=DELIVERY_STATUS_CHOICES,
         default=DELIVERY_NEW,
-        verbose_name='Yetkazish holati',
+        verbose_name='Етказиш ҳолати',
     )
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0'))
     paid_amount = models.DecimalField(
@@ -107,9 +120,9 @@ class Order(TimeStampedModel):
         decimal_places=2,
         default=Decimal('0'),
         validators=[MinValueValidator(Decimal('0'))],
-        verbose_name="To'langan summa",
+        verbose_name="Тўланган сумма",
     )
-    note = models.TextField(blank=True, verbose_name='Izoh')
+    note = models.TextField(blank=True, verbose_name='Изоҳ')
     delivery_received_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0'))
     delivery_note = models.TextField(blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
@@ -130,8 +143,8 @@ class Order(TimeStampedModel):
 
     class Meta:
         ordering = ('-order_date', '-id')
-        verbose_name = 'Buyurtma'
-        verbose_name_plural = 'Buyurtmalar'
+        verbose_name = 'Буюртма'
+        verbose_name_plural = 'Буюртмалар'
 
     def __str__(self):
         return f"#{self.pk} - {self.shop.name}"
@@ -149,14 +162,14 @@ class Order(TimeStampedModel):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.PROTECT, verbose_name='Mahsulot')
-    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)], verbose_name='Soni')
-    price_at_sale = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Narxi (so'm)")
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, verbose_name='Маҳсулот')
+    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)], verbose_name='Сони')
+    price_at_sale = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Нархи (сўм)")
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0'))
 
     class Meta:
-        verbose_name = 'Buyurtma elementi'
-        verbose_name_plural = 'Buyurtma elementlari'
+        verbose_name = 'Буюртма элементи'
+        verbose_name_plural = 'Буюртма элементлари'
 
     def __str__(self):
         return f'{self.product.name} x {self.quantity}'
@@ -174,19 +187,19 @@ class OrderItem(models.Model):
 
 class ShopDeposit(TimeStampedModel):
     shop = models.ForeignKey(Shop, related_name='deposits', on_delete=models.CASCADE)
-    date = models.DateField(default=timezone.localdate, verbose_name='Sana')
+    date = models.DateField(default=timezone.localdate, verbose_name='Сана')
     amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))],
-        verbose_name='Miqdor',
+        verbose_name='Миқдор',
     )
-    note = models.CharField(max_length=255, blank=True, verbose_name='Izoh')
+    note = models.CharField(max_length=255, blank=True, verbose_name='Изоҳ')
 
     class Meta:
         ordering = ('-date', '-id')
         verbose_name = "Depozit"
-        verbose_name_plural = "Depozitlar"
+        verbose_name_plural = "Депозитлар"
 
     def __str__(self):
         return f"{self.shop.name} +{self.amount}"
@@ -199,10 +212,10 @@ class Employee(TimeStampedModel):
     ROLE_ORDER_TAKER = 'order_taker'
 
     ROLE_CHOICES = (
-        (ROLE_COURIER, 'Kuryer'),
-        (ROLE_WORKER, 'Ishchi'),
-        (ROLE_FILLER, "Suv to'ldiruvchi"),
-        (ROLE_ORDER_TAKER, 'Buyurtma qabul qiluvchi'),
+        (ROLE_COURIER, 'Курер'),
+        (ROLE_WORKER, 'Ишчи'),
+        (ROLE_FILLER, "Сув тўлдирувчи"),
+        (ROLE_ORDER_TAKER, 'Буюртма қабул қилувчи'),
     )
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='employee_profile', on_delete=models.CASCADE)
@@ -236,12 +249,12 @@ class ActionLog(TimeStampedModel):
     ACTION_ORDER_DELIVERED = 'order_delivered'
 
     ACTION_CHOICES = (
-        (ACTION_CREATED, 'Yaratdi'),
-        (ACTION_UPDATED, 'Tahrirladi'),
-        (ACTION_DELETED, "O'chirdi"),
-        (ACTION_SHOP_CREATED, "Do'kon qo'shildi"),
-        (ACTION_ORDER_CREATED, "Buyurtma yaratildi"),
-        (ACTION_ORDER_DELIVERED, "Buyurtma yetkazildi"),
+        (ACTION_CREATED, 'Яратди'),
+        (ACTION_UPDATED, 'Таҳрирлади'),
+        (ACTION_DELETED, "Ўчирди"),
+        (ACTION_SHOP_CREATED, "Дўкон қўшилди"),
+        (ACTION_ORDER_CREATED, "Буюртма яратилди"),
+        (ACTION_ORDER_DELIVERED, "Буюртма етказилди"),
     )
 
     employee = models.ForeignKey(Employee, related_name='logs', on_delete=models.SET_NULL, null=True, blank=True)
@@ -262,18 +275,18 @@ class ActionLog(TimeStampedModel):
 
 class UserProfile(TimeStampedModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='user_profile', on_delete=models.CASCADE)
-    photo = models.FileField(upload_to='users/photos/', blank=True, null=True, verbose_name='Profil rasmi')
+    photo = models.FileField(upload_to='users/photos/', blank=True, null=True, verbose_name='Профил расми')
     phone_primary = models.CharField(max_length=25, blank=True, verbose_name='Telefon 1')
     phone_secondary = models.CharField(max_length=25, blank=True, verbose_name='Telefon 2')
-    telegram_phone = models.CharField(max_length=25, blank=True, verbose_name='Telegram telefoni')
+    telegram_phone = models.CharField(max_length=25, blank=True, verbose_name='Telegram телефони')
     telegram_link_token = models.CharField(max_length=80, blank=True, verbose_name='Telegram token')
     telegram_chat_id = models.CharField(max_length=64, blank=True, verbose_name='Telegram chat ID')
     telegram_username = models.CharField(max_length=150, blank=True, verbose_name='Telegram username')
-    telegram_connected_at = models.DateTimeField(null=True, blank=True, verbose_name='Telegram ulangan vaqt')
+    telegram_connected_at = models.DateTimeField(null=True, blank=True, verbose_name='Telegram уланган вақт')
 
     class Meta:
-        verbose_name = 'Foydalanuvchi profili'
-        verbose_name_plural = 'Foydalanuvchi profillari'
+        verbose_name = 'Фойдаланувчи профили'
+        verbose_name_plural = 'Фойдаланувчи профиллари'
 
     def __str__(self):
         return self.user.get_full_name() or self.user.username

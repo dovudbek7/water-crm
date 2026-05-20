@@ -1,74 +1,153 @@
 {% extends 'base.html' %}
 {% load core_extras %}
 
-{% block title %}Yetkazish{% endblock %}
-{% block page_title %}Yetkazish buyurtmalari{% endblock %}
+{% block title %}Етказиш{% endblock %}
+{% block page_title %}Етказиш буюртмалари{% endblock %}
 
 {% block content %}
 <section class="panel">
   <div class="panel-head wrap-head">
     <form method="get" class="search-inline">
-      <input type="text" name="q" placeholder="Do'kon, telefon yoki ID qidirish..." value="{{ search }}">
+      <input type="text" name="q" placeholder="Дўкон, телефон ёки ID қидириш..." value="{{ search }}">
       <select name="sort">
-        <option value="-id" {% if sort == '-id' %}selected{% endif %}>ID (yangi)</option>
-        <option value="id" {% if sort == 'id' %}selected{% endif %}>ID (eski)</option>
-        <option value="-date" {% if sort == '-date' %}selected{% endif %}>Sana (yangi)</option>
-        <option value="date" {% if sort == 'date' %}selected{% endif %}>Sana (eski)</option>
-        <option value="-paid" {% if sort == '-paid' %}selected{% endif %}>To'lov (ko'p)</option>
-        <option value="paid" {% if sort == 'paid' %}selected{% endif %}>To'lov (kam)</option>
-        <option value="-remaining" {% if sort == '-remaining' %}selected{% endif %}>Qoldiq (ko'p)</option>
-        <option value="remaining" {% if sort == 'remaining' %}selected{% endif %}>Qoldiq (kam)</option>
+        <option value="-id" {% if sort == '-id' %}selected{% endif %}>ID (янги)</option>
+        <option value="id" {% if sort == 'id' %}selected{% endif %}>ID (эски)</option>
+        <option value="-date" {% if sort == '-date' %}selected{% endif %}>Сана (янги)</option>
+        <option value="date" {% if sort == 'date' %}selected{% endif %}>Сана (эски)</option>
       </select>
-      <button class="btn btn-light" type="submit">Filtrlash</button>
+      <button class="btn btn-light" type="submit">Қидириш</button>
     </form>
+  </div>
+
+  <div class="date-strip-wrap">
+    <div class="date-strip-header">
+      <button type="button" class="ds-nav-btn" id="dsPrev">&#8249;</button>
+      <select id="dsMonthSel" class="ds-month-sel"></select>
+      <button type="button" class="ds-nav-btn" id="dsNext">&#8250;</button>
+      <a class="btn btn-light ds-all-btn" id="dsAllBtn" href="#">Барчасини кўриш</a>
+    </div>
+    <div class="day-strip-scroll" id="dayStrip"></div>
   </div>
 
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th>Buyurtma ID</th>
-          <th>Do'kon</th>
-          <th>Kuryer</th>
-          <th>Holat</th>
-          <th>Amal</th>
+          <th>Буюртма ID</th>
+          <th>Дўкон</th>
+          <th>Курер</th>
+          <th>Ҳолат</th>
+          <th>Амал</th>
         </tr>
       </thead>
       <tbody>
         {% for order in orders %}
         <tr>
           <td>#{{ order.id }}</td>
-          <td>{{ order.shop.name }}</td>
+          <td><a href="{% url 'shop-detail' order.shop.pk %}" class="row-name-link">{{ order.shop.name }}</a></td>
           <td>{% if order.courier %}{{ order.courier.get_full_name|default:order.courier.username }}{% else %}-{% endif %}</td>
           <td>
             {% if order.delivery_status == 'delivered' %}
-              <span class="badge badge-status-done">Yetkazildi</span>
+              <span class="badge badge-status-done">Етказилди</span>
             {% elif order.delivery_status == 'closed' %}
-              <span class="badge badge-status-closed">Yopiq</span>
+              <span class="badge badge-status-closed">Ёпиқ</span>
             {% else %}
-              <span class="badge badge-status-new">Yangi</span>
+              <span class="badge badge-status-new">Янги</span>
             {% endif %}
           </td>
           <td>
             <div class="icon-action-group">
               <a class="icon-btn sm" href="{% url 'delivery-detail' order.pk %}"><span class="material-symbols-outlined">visibility</span></a>
-              <!-- {% if order.shop.latitude and order.shop.longitude %}
-                <button type="button" class="icon-btn sm js-location-picker" data-google-url="https://www.google.com/maps/dir/?api=1&destination={{ order.shop.latitude }},{{ order.shop.longitude }}&travelmode=driving&dir_action=navigate" data-yandex-url="https://yandex.com/maps/?rtext=~{{ order.shop.latitude }},{{ order.shop.longitude }}&rtt=auto&ll={{ order.shop.longitude }}%2C{{ order.shop.latitude }}&z=16&pt={{ order.shop.longitude }},{{ order.shop.latitude }},pm2rdm" title="Lokatsiya">
-                  <span class="material-symbols-outlined">near_me</span>
-                </button>
-              {% elif order.shop.google_map_link or order.shop.yandex_map_link %}
-                <button type="button" class="icon-btn sm js-location-picker" data-google-url="{{ order.shop.google_map_link }}" data-yandex-url="{{ order.shop.yandex_map_link }}" title="Lokatsiya">
-                  <span class="material-symbols-outlined">near_me</span>
-                </button>
-              {% endif %} -->
             </div>
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5">Yetkazish buyurtmalari topilmadi.</td></tr>
+        <tr><td colspan="5">Етказиш буюртмалари топилмади.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var calYear = {{ cal_year }};
+  var calMonth = {{ cal_month }};
+  var counts = {{ calendar_counts_json|safe }};
+  var selectedDate = '{{ date_filter }}';
+  var todayStr = '{{ today_str }}';
+  var baseSearch = '{{ search }}';
+  var baseSort = '{{ sort }}';
+
+  var MONTHS = ['Январь','Феврал','Март','Апрел','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  var DOWS = ['Як','Ду','Се','Ча','Пе','Жу','Ша'];
+
+  function pad(n) { return n < 10 ? '0'+n : ''+n; }
+
+  function buildUrl(extra) {
+    var p = {};
+    if (baseSearch) p.q = baseSearch;
+    if (baseSort) p.sort = baseSort;
+    for (var k in extra) p[k] = extra[k];
+    return '?' + Object.keys(p).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(p[k]); }).join('&');
+  }
+
+  var sel = document.getElementById('dsMonthSel');
+  var endYear = new Date().getFullYear() + 1;
+  for (var y = 2024; y <= endYear; y++) {
+    for (var m = 1; m <= 12; m++) {
+      var opt = document.createElement('option');
+      opt.value = y + '-' + m;
+      opt.textContent = MONTHS[m-1] + ' ' + y;
+      if (y === calYear && m === calMonth) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  }
+
+  function renderStrip(year, month) {
+    var strip = document.getElementById('dayStrip');
+    var daysInMonth = new Date(year, month, 0).getDate();
+    var html = '';
+    for (var d = 1; d <= daysInMonth; d++) {
+      var ds = year + '-' + pad(month) + '-' + pad(d);
+      var dow = new Date(year, month - 1, d).getDay();
+      var cnt = counts[ds] || 0;
+      var cls = 'day-cell';
+      if (ds === todayStr) cls += ' today';
+      if (ds === selectedDate) cls += ' selected';
+      var url = buildUrl({date: ds, cal_year: year, cal_month: month});
+      html += '<a href="' + url + '" class="' + cls + '">';
+      html += '<span class="dc-dow">' + DOWS[dow] + '</span>';
+      html += '<span class="dc-num">' + d + '</span>';
+      html += '<span class="dc-cnt' + (cnt > 0 ? '' : ' empty') + '">' + (cnt > 0 ? cnt : '0') + '</span>';
+      html += '</a>';
+    }
+    strip.innerHTML = html;
+    var target = strip.querySelector('.selected') || strip.querySelector('.today');
+    if (target) setTimeout(function(){ target.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'}); }, 60);
+  }
+
+  renderStrip(calYear, calMonth);
+
+  sel.addEventListener('change', function() {
+    var parts = this.value.split('-');
+    window.location.href = buildUrl({cal_year: parseInt(parts[0]), cal_month: parseInt(parts[1]), date: selectedDate});
+  });
+
+  document.getElementById('dsPrev').addEventListener('click', function() {
+    var y = calYear, m = calMonth - 1;
+    if (m < 1) { m = 12; y--; }
+    window.location.href = buildUrl({cal_year: y, cal_month: m, date: selectedDate});
+  });
+  document.getElementById('dsNext').addEventListener('click', function() {
+    var y = calYear, m = calMonth + 1;
+    if (m > 12) { m = 1; y++; }
+    window.location.href = buildUrl({cal_year: y, cal_month: m, date: selectedDate});
+  });
+
+  document.getElementById('dsAllBtn').href = buildUrl({date: '', cal_year: calYear, cal_month: calMonth});
+})();
+</script>
 {% endblock %}

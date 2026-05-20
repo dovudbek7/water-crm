@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Do'konlar xaritasi{% endblock %}
-{% block page_title %}Do'konlar xaritasi{% endblock %}
+{% block title %}Дўконлар харитаси{% endblock %}
+{% block page_title %}Дўконлар харитаси{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -11,8 +11,8 @@
 {% block content %}
 <section class="panel">
   <div class="panel-head wrap-head">
-    <h3>Saqlangan lokatsiyali do'konlar</h3>
-    <a class="btn btn-light" href="{% url 'shop-list' %}">Ro'yxatga qaytish</a>
+    <h3>Сақланган локацияли дўконлар</h3>
+    <a class="btn btn-light" href="{% url 'shop-list' %}">Рўйхатга қайтиш</a>
   </div>
   <div id="shopsMap" style="height: 68vh; border-radius: 12px; border:1px solid var(--border); z-index: 1;"></div>
 </section>
@@ -47,9 +47,9 @@ if (mapEl && dataEl && typeof L !== 'undefined') {
     L.marker([shop.lat, shop.lng]).addTo(map).bindPopup(
       `<div style="min-width:220px;">
         <strong>${shop.name}</strong>
-        <div style="margin-top:6px;color:#6b7280;">${shop.info || "Qo'shimcha ma'lumot yo'q"}</div>
+        <div style="margin-top:6px;color:#6b7280;">${shop.info || "Қўшимча маълумот йўқ"}</div>
         <div style="margin-top:10px;">
-          <button type="button" class="btn btn-light btn-sm js-popup-location" data-google-url="${g}" data-yandex-url="${y}">Lokatsiyani ochish</button>
+          <button type="button" class="btn btn-light btn-sm js-popup-location" data-google-url="${g}" data-yandex-url="${y}">Локацияни очиш</button>
         </div>
       </div></div>`
     );

@@ -1,43 +1,43 @@
 {% extends 'base.html' %}
 {% load core_extras %}
 
-{% block title %}Do'kon tafsilotlari{% endblock %}
+{% block title %}Дўкон тафсилотлари{% endblock %}
 {% block page_title %}{{ shop.name }}{% endblock %}
 
 {% block content %}
 <section class="panel">
   <div class="panel-head">
-    <h3>Do'kon ma'lumotlari</h3>
+    <h3>Дўкон ма'лумотлари</h3>
     <div class="order-actions">
-      <a class="btn btn-light" href="{% url 'shop-export-pdf' shop.pk %}"><span class="material-symbols-outlined">picture_as_pdf</span>PDF yuklash</a>
-      <a class="btn btn-light" href="{% url 'shop-export-excel' shop.pk %}"><span class="material-symbols-outlined">table_view</span>Excel yuklash</a>
-      <a class="btn btn-light" href="{% url 'shop-list' %}">Orqaga</a>
+      <a class="btn btn-light" href="{% url 'shop-export-pdf' shop.pk %}"><span class="material-symbols-outlined">picture_as_pdf</span>PDF юклаш</a>
+      <a class="btn btn-light" href="{% url 'shop-export-excel' shop.pk %}"><span class="material-symbols-outlined">table_view</span>Excel юклаш</a>
+      <a class="btn btn-light" href="{% url 'shop-list' %}">Орқага</a>
     </div>
   </div>
 
   <div class="stats-grid">
-    <article class="stat-card"><p>Jami olgan summa</p><h3>{{ shop.total_purchased|som }}</h3></article>
-    <article class="stat-card"><p>Jami to'langan summa</p><h3>{{ shop.total_paid|som }}</h3></article>
+    <article class="stat-card"><p>Жами олган сумма</p><h3>{{ shop.total_purchased|som }}</h3></article>
+    <article class="stat-card"><p>Жами тўланган сумма</p><h3>{{ shop.total_paid|som }}</h3></article>
     <article class="stat-card">
-      <p>Balans</p>
+      <p>Баланс</p>
       <h3 class="{{ shop.balance|shop_balance_class }}">{{ shop.balance|shop_balance_icon }} {{ shop.balance|shop_balance_label }}</h3>
     </article>
   </div>
   <div class="grid-form">
     <div>
-      <label>Rasm</label>
+      <label>Расм</label>
       {% if shop.photo %}
-        <img src="{{ shop.photo.url }}" data-fullscreen-image="{{ shop.photo.url }}" alt="Do'kon rasmi" class="image-thumb">
+        <img src="{{ shop.photo.url }}" data-fullscreen-image="{{ shop.photo.url }}" alt="Дўкон расми" class="image-thumb">
       {% else %}
         <div class="avatar" style="width:64px;height:64px;"><span class="material-symbols-outlined">storefront</span></div>
       {% endif %}
     </div>
     <div>
-      <label>Manzil</label>
+      <label>Манзил</label>
       <input type="text" readonly value="{{ shop.address|default:'-' }}">
     </div>
     <div>
-      <label>Telefon 1</label>
+      <label>Телефон 1</label>
       {% if shop.phone_primary %}
         <a class="phone-link" href="tel:{{ shop.phone_primary|tel_link }}">{{ shop.phone_primary }}</a>
       {% else %}
@@ -45,7 +45,7 @@
       {% endif %}
     </div>
     <div>
-      <label>Telefon 2</label>
+      <label>Телефон 2</label>
       {% if shop.phone_secondary %}
         <a class="phone-link" href="tel:{{ shop.phone_secondary|tel_link }}">{{ shop.phone_secondary }}</a>
       {% else %}
@@ -53,16 +53,16 @@
       {% endif %}
     </div>
     <div>
-      <label>Izoh</label>
+      <label>Изоҳ</label>
       <textarea rows="2" readonly>{{ shop.note|default:'-' }}</textarea>
     </div>
     <div>
-      <label>Xarita ochish</label>
+      <label>Харита очиш</label>
       <div class="order-actions">
         {% if google_maps_url or yandex_maps_url %}
-          <button type="button" class="btn btn-light js-location-picker" data-google-url="{{ google_maps_url }}" data-yandex-url="{{ yandex_maps_url }}">Lokatsiyani ochish</button>
+          <button type="button" class="btn btn-light js-location-picker" data-google-url="{{ google_maps_url }}" data-yandex-url="{{ yandex_maps_url }}">Локацияни очиш</button>
         {% else %}
-          <span class="muted-note">Lokatsiya mavjud emas</span>
+          <span class="muted-note">Локация мавжуд эмас</span>
         {% endif %}
       </div>
     </div>
@@ -70,39 +70,39 @@
 </section>
 
 <section class="panel form-panel">
-  <h3>Depozit qo'shish</h3>
+  <h3>Депозит қўшиш</h3>
   <form method="post" action="{% url 'shop-deposit-create' shop.pk %}" class="grid-form">
     {% csrf_token %}
     <div>
-      <label for="id_date">Sana</label>
+      <label for="id_date">Сана</label>
       {{ deposit_form.date }}
     </div>
     <div>
-      <label for="id_amount">Miqdor</label>
+      <label for="id_amount">Миқдор</label>
       {{ deposit_form.amount }}
     </div>
     <div>
-      <label for="id_note">Izoh</label>
+      <label for="id_note">Изоҳ</label>
       {{ deposit_form.note }}
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" type="submit">Saqlash</button>
+      <button class="btn btn-primary" type="submit">Сақлаш</button>
     </div>
   </form>
 </section>
 
 <section class="panel">
-  <h3>Tranzaksiya tarixi</h3>
+  <h3>Транзаксия тарихи</h3>
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th>Sana</th>
-          <th>Turi</th>
-          <th>Miqdor</th>
-          <th>Buyurtma ID</th>
-          <th>Izoh</th>
-          <th>Amallar</th>
+          <th>Сана</th>
+          <th>Тури</th>
+          <th>Миқдор</th>
+          <th>Буюртма ID</th>
+          <th>Изоҳ</th>
+          <th>Амаллар</th>
         </tr>
       </thead>
       <tbody>
@@ -110,22 +110,22 @@
           <tr>
             <td>{{ row.date|date:'d.m.Y' }}</td>
             <td>{{ row.type }}</td>
-            <td class="{% if row.amount < 0 %}balance-down{% elif row.amount > 0 %}balance-up{% else %}balance-neutral{% endif %}">
+            <td class="{% if row.amount < 0 %}balance-down{% elif row.amount > 0 %}баланcе-уп{% else %}баланcе-неутрал{% endif %}">
               {% if row.amount < 0 %}↓{% elif row.amount > 0 %}↑{% else %}•{% endif %} {{ row.amount|signed_som }}
             </td>
             <td>{% if row.order_id %}#{{ row.order_id }}{% else %}-{% endif %}</td>
             <td>{{ row.note|default:'-' }}</td>
             <td class="actions">
               {% if row.is_deposit %}
-                <a class="btn btn-light" href="{% url 'shop-deposit-update' row.pk %}">Tahrirlash</a>
-                <a class="btn btn-danger" href="{% url 'shop-deposit-delete' row.pk %}">O'chirish</a>
+                <a class="btn btn-light" href="{% url 'shop-deposit-update' row.pk %}">Таҳрирлаш</a>
+                <a class="btn btn-danger" href="{% url 'shop-deposit-delete' row.pk %}">Ўчириш</a>
               {% else %}
-                <span class="muted-note">Tahrirlab bo'lmaydi</span>
+                <span class="muted-note">Таҳрирлаб бўлмайди</span>
               {% endif %}
             </td>
           </tr>
         {% empty %}
-          <tr><td colspan="6">Tranzaksiyalar yo'q.</td></tr>
+          <tr><td colspan="6">Транзаксиялар йўқ.</td></tr>
         {% endfor %}
       </tbody>
     </table>

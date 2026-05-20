@@ -1,21 +1,29 @@
 {% extends 'base.html' %}
 {% load core_extras %}
 
-{% block title %}Do'konlar{% endblock %}
-{% block page_title %}Do'konlar{% endblock %}
+{% block title %}Дўконлар{% endblock %}
+{% block page_title %}Дўконлар{% endblock %}
 
 {% block content %}
 <section class="panel">
   <div class="panel-head wrap-head">
     <form method="get" class="search-inline">
-      <input type="text" name="q" placeholder="Do'kon yoki telefon qidirish..." value="{{ search }}">
-      <button type="submit" class="btn btn-light">Qidirish</button>
+      <input type="text" name="q" placeholder="Дўкон ёки телефон қидириш..." value="{{ search }}">
+      {% if regions %}
+      <select name="region" class="filter-select">
+        <option value="">Барча регионлар</option>
+        {% for region in regions %}
+          <option value="{{ region.pk }}" {% if selected_region == region.pk|stringformat:'s' %}selected{% endif %}>{{ region.name }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      <button type="submit" class="btn btn-light">Қидириш</button>
     </form>
     <div class="order-actions">
-      <a href="{% url 'shop-list-export-pdf' %}" class="btn btn-light"><span class="material-symbols-outlined">picture_as_pdf</span>PDF yuklash</a>
-      <a href="{% url 'shop-list-export-excel' %}" class="btn btn-light"><span class="material-symbols-outlined">table_view</span>Excel yuklash</a>
-      <a href="{% url 'shop-map' %}" class="btn btn-light"><span class="material-symbols-outlined">map</span>Xaritada ko'rish</a>
-      <a href="{% url 'shop-create' %}" class="btn btn-primary">Yangi do'kon</a>
+      <a href="{% url 'shop-list-export-pdf' %}" class="btn btn-light"><span class="material-symbols-outlined">picture_as_pdf</span>PDF юклаш</a>
+      <a href="{% url 'shop-list-export-excel' %}" class="btn btn-light"><span class="material-symbols-outlined">table_view</span>Excel юклаш</a>
+      <a href="{% url 'shop-map' %}" class="btn btn-light"><span class="material-symbols-outlined">map</span>Харитада кўриш</a>
+      <a href="{% url 'shop-create' %}" class="btn btn-primary">Янги дўкон</a>
     </div>
   </div>
 
@@ -23,11 +31,12 @@
     <table>
       <thead>
         <tr>
-          <th>Do'kon nomi</th>
-          <th>Jami olgan</th>
-          <th>Jami to'lagan</th>
-          <th>Balans</th>
-          <th>Amallar</th>
+          <th>Дўкон номи</th>
+          <th>Регион</th>
+          <th>Жами олган</th>
+          <th>Жами тўлаган</th>
+          <th>Баланс</th>
+          <th>Амаллар</th>
         </tr>
       </thead>
       <tbody>
@@ -40,24 +49,25 @@
                 {% else %}
                   <div class="avatar avatar-thumb placeholder-avatar"><span class="material-symbols-outlined">storefront</span></div>
                 {% endif %}
-                <span>{{ shop.name }}</span>
+                <a href="{% url 'shop-detail' shop.pk %}" class="row-name-link">{{ shop.name }}</a>
               </div>
             </td>
+            <td>{{ shop.region.name|default:"—" }}</td>
             <td>{{ shop.total_purchased|som }}</td>
             <td>{{ shop.total_paid|som }}</td>
             <td class="{{ shop.balance|shop_balance_class }}">{{ shop.balance|shop_balance_icon }} {{ shop.balance|shop_balance_label }}</td>
             <td>
               <div class="icon-action-group">
-                <a class="icon-btn sm" href="{% url 'shop-detail' shop.pk %}" title="Ko'rish"><span class="material-symbols-outlined">visibility</span></a>
-                <a class="icon-btn sm" href="{% url 'shop-update' shop.pk %}" title="Tahrirlash"><span class="material-symbols-outlined">edit</span></a>
+                <a class="icon-btn sm" href="{% url 'shop-detail' shop.pk %}" title="Кўриш"><span class="material-symbols-outlined">visibility</span></a>
+                <a class="icon-btn sm" href="{% url 'shop-update' shop.pk %}" title="Таҳрирлаш"><span class="material-symbols-outlined">edit</span></a>
                 {% if request.user.is_superuser %}
-                <a class="icon-btn sm danger" href="{% url 'shop-delete' shop.pk %}" title="O'chirish"><span class="material-symbols-outlined">delete</span></a>
+                <a class="icon-btn sm danger" href="{% url 'shop-delete' shop.pk %}" title="Ўчириш"><span class="material-symbols-outlined">delete</span></a>
                 {% endif %}
               </div>
             </td>
           </tr>
         {% empty %}
-          <tr><td colspan="5">Hozircha do'konlar yo'q.</td></tr>
+          <tr><td colspan="6">Ҳозирча дўконлар йўқ.</td></tr>
         {% endfor %}
       </tbody>
     </table>

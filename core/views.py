@@ -48,11 +48,12 @@ from core.forms import (
     OrderForm,
     OrderItemFormSet,
     ProductForm,
+    RegionForm,
     ShopDepositForm,
     ShopForm,
     UserProfileForm,
 )
-from core.models import ActionLog, Employee, Order, OrderItem, Product, Shop, ShopDeposit, UserProfile
+from core.models import ActionLog, Employee, Order, OrderItem, Product, Region, Shop, ShopDeposit, UserProfile
 from core.telegram_utils import (
     build_telegram_connect_link,
     format_order_closed_message,
@@ -175,7 +176,7 @@ def _shop_marker_info(shop):
         return shop.address
     if shop.note:
         return shop.note[:80]
-    return "Qo'shimcha ma'lumot yo'q"
+    return "Қўшимча маълумот йўқ"
 
 
 def _val(v):
@@ -204,7 +205,7 @@ def _log_create(user, obj, fields):
         actor_name=user.get_full_name() or user.username,
         action_type=ActionLog.ACTION_CREATED,
         object_label=label,
-        message=f"{user.get_full_name() or user.username} yaratdi: {label}",
+        message=f"{user.get_full_name() or user.username} яратди: {label}",
         target_model=obj.__class__.__name__,
         target_id=str(getattr(obj, 'pk', '')),
         details={'created': data},
@@ -225,7 +226,7 @@ def _log_update(user, obj, before_data, after_data):
         actor_name=user.get_full_name() or user.username,
         action_type=ActionLog.ACTION_UPDATED,
         object_label=label,
-        message=f"{user.get_full_name() or user.username} tahrirladi: {label}",
+        message=f"{user.get_full_name() or user.username} таҳрирлади: {label}",
         target_model=obj.__class__.__name__,
         target_id=str(getattr(obj, 'pk', '')),
         details={'updated_fields': changed},
@@ -238,7 +239,7 @@ def _log_delete(user, model_name, object_label, snapshot):
         actor_name=user.get_full_name() or user.username,
         action_type=ActionLog.ACTION_DELETED,
         object_label=object_label,
-        message=f"{user.get_full_name() or user.username} o'chirdi: {object_label}",
+        message=f"{user.get_full_name() or user.username} ўчирди: {object_label}",
         target_model=model_name,
         target_id='',
         details={'deleted': _json_safe(snapshot)},
@@ -336,6 +337,53 @@ class DashboardView(SuperAdminRequiredMixin, TemplateView):
         return context
 
 
+class RegionListView(SuperAdminRequiredMixin, ListView):
+    model = Region
+    template_name = 'core/regions/region_list.html'
+    context_object_name = 'regions'
+
+
+class RegionCreateView(SuperAdminRequiredMixin, CreateView):
+    model = Region
+    form_class = RegionForm
+    template_name = 'core/regions/region_form.html'
+    success_url = reverse_lazy('region-list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        _log_create(self.request.user, self.object, ['name'])
+        messages.success(self.request, 'Регион муваффақиятли қўшилди.')
+        return response
+
+
+class RegionUpdateView(SuperAdminRequiredMixin, UpdateView):
+    model = Region
+    form_class = RegionForm
+    template_name = 'core/regions/region_form.html'
+    success_url = reverse_lazy('region-list')
+
+    def form_valid(self, form):
+        before = model_to_dict(self.get_object(), fields=['name'])
+        response = super().form_valid(form)
+        after = model_to_dict(self.object, fields=['name'])
+        _log_update(self.request.user, self.object, before, after)
+        messages.success(self.request, 'Регион янгиланди.')
+        return response
+
+
+class RegionDeleteView(SuperAdminRequiredMixin, DeleteView):
+    model = Region
+    template_name = 'core/regions/region_confirm_delete.html'
+    success_url = reverse_lazy('region-list')
+
+    def form_valid(self, form):
+        obj = self.get_object()
+        snapshot = model_to_dict(obj, fields=['name'])
+        _log_delete(self.request.user, 'Region', str(obj), snapshot)
+        messages.success(self.request, 'Регион ўчирилди.')
+        return super().form_valid(form)
+
+
 class ProductListView(SuperAdminRequiredMixin, ListView):
     model = Product
     template_name = 'core/products/product_list.html'
@@ -351,7 +399,7 @@ class ProductCreateView(SuperAdminRequiredMixin, CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         _log_create(self.request.user, self.object, ['name', 'price'])
-        messages.success(self.request, 'Mahsulot muvaffaqiyatli qo\'shildi.')
+        messages.success(self.request, 'Маҳсулот муваффақиятли қўшилди.')
         return response
 
 
@@ -366,7 +414,7 @@ class ProductUpdateView(SuperAdminRequiredMixin, UpdateView):
         response = super().form_valid(form)
         after = model_to_dict(self.object, fields=['name', 'price'])
         _log_update(self.request.user, self.object, before, after)
-        messages.success(self.request, 'Mahsulot yangilandi.')
+        messages.success(self.request, 'Маҳсулот янгиланди.')
         return response
 
 
@@ -379,7 +427,7 @@ class ProductDeleteView(SuperAdminRequiredMixin, DeleteView):
         obj = self.get_object()
         snapshot = model_to_dict(obj, fields=['name', 'price'])
         _log_delete(self.request.user, 'Product', str(obj), snapshot)
-        messages.success(self.request, 'Mahsulot o\'chirildi.')
+        messages.success(self.request, 'Маҳсулот ўчирилди.')
         return super().form_valid(form)
 
 
@@ -389,19 +437,24 @@ class ShopListView(AuthRequiredMixin, ListView):
     context_object_name = 'shops'
 
     def get_queryset(self):
-        qs = Shop.objects.all()
+        qs = Shop.objects.select_related('region').all()
         q = self.request.GET.get('q', '').strip()
+        region_id = self.request.GET.get('region', '').strip()
         if q:
             qs = qs.filter(
                 Q(name__icontains=q)
                 | Q(phone_primary__icontains=q)
                 | Q(phone_secondary__icontains=q)
             )
+        if region_id:
+            qs = qs.filter(region_id=region_id)
         return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['search'] = self.request.GET.get('q', '').strip()
+        ctx['regions'] = Region.objects.all()
+        ctx['selected_region'] = self.request.GET.get('region', '').strip()
         return ctx
 
 
@@ -431,7 +484,7 @@ class ShopCreateView(AuthRequiredMixin, CreateView):
     success_url = reverse_lazy('shop-list')
 
     def form_valid(self, form):
-        messages.success(self.request, "Do'kon muvaffaqiyatli qo'shildi.")
+        messages.success(self.request, "Дўкон муваффақиятли қўшилди.")
         response = super().form_valid(form)
         _log_create(self.request.user, self.object, ['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'latitude', 'longitude'])
         return response
@@ -448,7 +501,7 @@ class ShopUpdateView(AuthRequiredMixin, UpdateView):
         response = super().form_valid(form)
         after = model_to_dict(self.object, fields=['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'latitude', 'longitude'])
         _log_update(self.request.user, self.object, before, after)
-        messages.success(self.request, "Do'kon ma'lumotlari yangilandi.")
+        messages.success(self.request, "Дўкон маълумотлари янгиланди.")
         return response
 
 
@@ -461,7 +514,7 @@ class ShopDeleteView(SuperAdminRequiredMixin, DeleteView):
         obj = self.get_object()
         snapshot = model_to_dict(obj, fields=['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'latitude', 'longitude'])
         _log_delete(self.request.user, 'Shop', str(obj), snapshot)
-        messages.success(self.request, "Do'kon o'chirildi.")
+        messages.success(self.request, "Дўкон ўчирилди.")
         return super().form_valid(form)
 
 
@@ -495,9 +548,9 @@ class ShopDepositCreateView(AuthRequiredMixin, View):
             deposit.shop = shop
             deposit.save()
             _log_create(request.user, deposit, ['shop_id', 'date', 'amount', 'note'])
-            messages.success(request, "Depozit qo'shildi.")
+            messages.success(request, "Депозит қўшилди.")
         else:
-            messages.error(request, 'Depozit ma\'lumotlari noto\'g\'ri.')
+            messages.error(request, 'Депозит маълумотлари нотўғри.')
         return redirect('shop-detail', pk=shop.pk)
 
 
@@ -514,7 +567,7 @@ class ShopDepositUpdateView(AuthRequiredMixin, UpdateView):
         response = super().form_valid(form)
         after = model_to_dict(self.object, fields=['shop_id', 'date', 'amount', 'note'])
         _log_update(self.request.user, self.object, before, after)
-        messages.success(self.request, 'Depozit yangilandi.')
+        messages.success(self.request, 'Депозит янгиланди.')
         return response
 
 
@@ -529,7 +582,7 @@ class ShopDepositDeleteView(AuthRequiredMixin, DeleteView):
         obj = self.get_object()
         snapshot = model_to_dict(obj, fields=['shop_id', 'date', 'amount', 'note'])
         _log_delete(self.request.user, 'ShopDeposit', f"Depozit #{obj.pk}", snapshot)
-        messages.success(self.request, "Depozit o'chirildi.")
+        messages.success(self.request, "Депозит ўчирилди.")
         return super().form_valid(form)
 
 
@@ -557,6 +610,20 @@ class ShopListExportPDFView(AuthRequiredMixin, View):
         return export_shops_pdf(Shop.objects.all())
 
 
+def _build_calendar_data(base_qs, cal_year, cal_month):
+    import calendar as cal_lib
+    last_day = cal_lib.monthrange(cal_year, cal_month)[1]
+    cal_start = date(cal_year, cal_month, 1)
+    cal_end = date(cal_year, cal_month, last_day)
+    daily = (
+        base_qs
+        .filter(order_date__gte=cal_start, order_date__lte=cal_end)
+        .values('order_date')
+        .annotate(cnt=Count('id'))
+    )
+    return {str(r['order_date']): r['cnt'] for r in daily}
+
+
 class OrderListView(AuthRequiredMixin, TemplateView):
     template_name = 'core/orders/order_list.html'
 
@@ -565,34 +632,66 @@ class OrderListView(AuthRequiredMixin, TemplateView):
         search = self.request.GET.get('q', '').strip()
         sort = self.request.GET.get('sort', '-id')
 
+        today = timezone.localdate()
+        # Default to today if date param is absent
+        if 'date' in self.request.GET:
+            date_filter = self.request.GET['date'].strip()
+        else:
+            date_filter = str(today)
+
+        try:
+            cal_year = int(self.request.GET.get('cal_year', today.year))
+            cal_month = int(self.request.GET.get('cal_month', today.month))
+            cal_year = max(2020, min(cal_year, today.year + 1))
+            cal_month = max(1, min(cal_month, 12))
+        except (ValueError, TypeError):
+            cal_year, cal_month = today.year, today.month
+
         sort_map = {
-            'id': 'id',
-            '-id': '-id',
-            'date': 'order_date',
-            '-date': '-order_date',
-            'paid': 'paid_amount',
-            '-paid': '-paid_amount',
-            'remaining': 'remaining_amount',
-            '-remaining': '-remaining_amount',
+            'id': 'id', '-id': '-id',
+            'date': 'order_date', '-date': '-order_date',
+            'paid': 'paid_amount', '-paid': '-paid_amount',
+            'remaining': 'remaining_amount', '-remaining': '-remaining_amount',
         }
         order_by = sort_map.get(sort, '-id')
 
-        qs = Order.objects.select_related('shop').annotate(
+        base_qs = Order.objects.select_related('shop').annotate(
             remaining_amount=ExpressionWrapper(F('total_amount') - F('paid_amount'), output_field=DecimalField())
         )
         if search:
-            qs = qs.filter(
+            base_qs = base_qs.filter(
                 Q(shop__name__icontains=search)
                 | Q(shop__phone_primary__icontains=search)
                 | Q(shop__phone_secondary__icontains=search)
                 | Q(id__icontains=search)
             )
 
+        qs = base_qs
+        if date_filter:
+            try:
+                from datetime import date as date_cls
+                parsed = date_cls.fromisoformat(date_filter)
+                qs = qs.filter(order_date=parsed)
+            except ValueError:
+                date_filter = str(today)
+                qs = qs.filter(order_date=today)
+
         qs = qs.order_by(order_by)
         paginator = Paginator(qs, 12)
         page_obj = paginator.get_page(self.request.GET.get('page'))
 
-        context.update({'page_obj': page_obj, 'search': search, 'sort': sort})
+        calendar_counts = _build_calendar_data(base_qs, cal_year, cal_month)
+
+        context.update({
+            'page_obj': page_obj,
+            'search': search,
+            'sort': sort,
+            'date_filter': date_filter,
+            'cal_year': cal_year,
+            'cal_month': cal_month,
+            'calendar_counts_json': json.dumps(calendar_counts),
+            'today_str': str(today),
+        })
         context.update(company_context())
         return context
 
@@ -610,7 +709,7 @@ class OrderCreateView(AuthRequiredMixin, View):
 
         if order_form.is_valid() and formset.is_valid():
             order = save_order_with_items(order_form, formset, request.user)
-            messages.success(request, f'Buyurtma #{order.id} muvaffaqiyatli saqlandi.')
+            messages.success(request, f'Буюртма #{order.id} муваффақиятли сақланди.')
             _log_create(request.user, order, ['shop_id', 'order_date', 'order_type', 'total_amount', 'paid_amount', 'note'])
             send_telegram_channel_message(format_order_created_message(order))
             return redirect('order-list')
@@ -670,7 +769,7 @@ class OrderUpdateView(AuthRequiredMixin, View):
             after = model_to_dict(order, fields=['shop_id', 'order_date', 'order_type', 'total_amount', 'paid_amount', 'note', 'delivery_status'])
             _log_update(request.user, order, before, after)
 
-            messages.success(request, f'Buyurtma #{order.id} yangilandi.')
+            messages.success(request, f'Буюртма #{order.id} янгиланди.')
             return redirect('order-list')
 
         context = {
@@ -703,10 +802,10 @@ class OrderDeleteView(SuperAdminRequiredMixin, DeleteView):
             'note': obj.note or '-',
         }
         try:
-            _log_delete(self.request.user, 'Order', f"Buyurtma #{obj.pk}", snapshot)
+            _log_delete(self.request.user, 'Order', f"Буюртма #{obj.pk}", snapshot)
         except Exception:
-            messages.warning(self.request, "Buyurtma o'chirildi, lekin log yozishda kichik xatolik bo'ldi.")
-        messages.success(self.request, "Buyurtma o'chirildi.")
+            messages.warning(self.request, "Буюртма ўчирилди, лекин лог ёзишда кичик хатолик бўлди.")
+        messages.success(self.request, "Буюртма ўчирилди.")
         return super().form_valid(form)
 
 
@@ -773,31 +872,65 @@ class DeliveryListView(AuthRequiredMixin, TemplateView):
         search = self.request.GET.get('q', '').strip()
         sort = self.request.GET.get('sort', '-id')
 
+        today = timezone.localdate()
+        # Default to today if date param is absent
+        if 'date' in self.request.GET:
+            date_filter = self.request.GET['date'].strip()
+        else:
+            date_filter = str(today)
+
+        try:
+            cal_year = int(self.request.GET.get('cal_year', today.year))
+            cal_month = int(self.request.GET.get('cal_month', today.month))
+            cal_year = max(2020, min(cal_year, today.year + 1))
+            cal_month = max(1, min(cal_month, 12))
+        except (ValueError, TypeError):
+            cal_year, cal_month = today.year, today.month
+
         sort_map = {
-            'id': 'id',
-            '-id': '-id',
-            'date': 'order_date',
-            '-date': '-order_date',
-            'paid': 'paid_amount',
-            '-paid': '-paid_amount',
-            'remaining': 'remaining_amount',
-            '-remaining': '-remaining_amount',
+            'id': 'id', '-id': '-id',
+            'date': 'order_date', '-date': '-order_date',
+            'paid': 'paid_amount', '-paid': '-paid_amount',
+            'remaining': 'remaining_amount', '-remaining': '-remaining_amount',
         }
         order_by = sort_map.get(sort, '-id')
 
-        qs = Order.objects.select_related('shop', 'courier').filter(order_type=Order.ORDER_TYPE_DELIVERY).annotate(
+        base_qs = Order.objects.select_related('shop', 'courier').filter(
+            order_type=Order.ORDER_TYPE_DELIVERY
+        ).annotate(
             remaining_amount=ExpressionWrapper(F('total_amount') - F('paid_amount'), output_field=DecimalField())
         )
         if search:
-            qs = qs.filter(
+            base_qs = base_qs.filter(
                 Q(shop__name__icontains=search)
                 | Q(shop__phone_primary__icontains=search)
                 | Q(shop__phone_secondary__icontains=search)
                 | Q(id__icontains=search)
             )
 
+        qs = base_qs
+        if date_filter:
+            try:
+                from datetime import date as date_cls
+                parsed = date_cls.fromisoformat(date_filter)
+                qs = qs.filter(order_date=parsed)
+            except ValueError:
+                date_filter = str(today)
+                qs = qs.filter(order_date=today)
+
         qs = qs.order_by(order_by)
-        context.update({'orders': qs, 'search': search, 'sort': sort})
+        calendar_counts = _build_calendar_data(base_qs, cal_year, cal_month)
+
+        context.update({
+            'orders': qs,
+            'search': search,
+            'sort': sort,
+            'date_filter': date_filter,
+            'cal_year': cal_year,
+            'cal_month': cal_month,
+            'calendar_counts_json': json.dumps(calendar_counts),
+            'today_str': str(today),
+        })
         return context
 
 
@@ -834,10 +967,10 @@ class DeliveryDetailView(AuthRequiredMixin, View):
                 order.delivery_status = Order.DELIVERY_DONE
             order.save(update_fields=['delivery_received_amount', 'delivery_note', 'delivery_status', 'courier', 'delivered_at'])
             if order.delivery_status == Order.DELIVERY_CLOSED:
-                messages.success(request, f'Buyurtma #{order.id} yopiq deb belgilandi.')
+                messages.success(request, f'Буюртма #{order.id} ёпиқ деб белгиланди.')
                 send_telegram_channel_message(format_order_closed_message(order))
             else:
-                messages.success(request, f'Buyurtma #{order.id} yetkazilgan deb belgilandi.')
+                messages.success(request, f'Буюртма #{order.id} етказилган деб белгиланди.')
                 courier_name = request.user.get_full_name() or request.user.username
                 send_telegram_channel_message(format_order_delivered_message(order, courier_name))
             after = model_to_dict(order, fields=['delivery_status', 'delivery_received_amount', 'delivery_note', 'courier_id', 'delivered_at'])
@@ -904,7 +1037,7 @@ class EmployeeCreateView(SuperAdminRequiredMixin, FormView):
     def form_valid(self, form):
         employee = form.save()
         _log_create(self.request.user, employee, ['user_id', 'role', 'phone_primary', 'phone_secondary'])
-        messages.success(self.request, f"Xodim qo'shildi: {employee}")
+        messages.success(self.request, f"Ходим қўшилди: {employee}")
         return super().form_valid(form)
 
 
@@ -924,12 +1057,12 @@ class EmployeeUpdateView(SuperAdminRequiredMixin, UpdateView):
                 actor_name=self.request.user.get_full_name() or self.request.user.username,
                 action_type=ActionLog.ACTION_UPDATED,
                 object_label=str(self.object),
-                message=f"{self.request.user.get_full_name() or self.request.user.username} parolni yangiladi: {self.object}",
+                message=f"{self.request.user.get_full_name() or self.request.user.username} паролни янгилади: {self.object}",
                 target_model='Employee',
                 target_id=str(self.object.pk),
                 details={'updated_fields': {'password': {'old': '***', 'new': '***'}}},
             )
-        messages.success(self.request, "Xodim ma'lumotlari yangilandi.")
+        messages.success(self.request, "Ходим маълумотлари янгиланди.")
         return response
 
     def get_success_url(self):
@@ -1035,7 +1168,7 @@ class TelegramLinkGenerateView(AuthRequiredMixin, View):
         profile.save(update_fields=['telegram_link_token', 'updated_at'])
         connect_link = build_telegram_connect_link(profile.telegram_link_token)
         if not connect_link:
-            messages.error(request, 'Telegram bot hali sozlanmagan.')
+            messages.error(request, 'Telegram бот ҳали созланмаган.')
             return redirect('profile')
         return redirect(connect_link)
 
@@ -1056,7 +1189,7 @@ class TelegramDisconnectView(AuthRequiredMixin, View):
                 'updated_at',
             ]
         )
-        messages.success(request, 'Telegram ulanishi bekor qilindi.')
+        messages.success(request, 'Telegram уланиши бекор қилинди.')
         return redirect('profile')
 
 
@@ -1070,7 +1203,7 @@ class TelegramConnectConfirmView(View):
         chat_id = (request.POST.get('chat_id') or '').strip()
         username = (request.POST.get('username') or '').strip()
         if not chat_id:
-            return JsonResponse({'ok': False, 'message': 'chat_id topilmadi.'}, status=400)
+            return JsonResponse({'ok': False, 'message': 'chat_id топилмади.'}, status=400)
 
         profile.telegram_chat_id = chat_id
         profile.telegram_username = username
@@ -1085,23 +1218,23 @@ class TelegramConnectConfirmView(View):
                 'updated_at',
             ]
         )
-        return JsonResponse({'ok': True, 'message': 'Akkaunt ulandi.'})
+        return JsonResponse({'ok': True, 'message': 'Аккаунт уланди.'})
 
 
 class TelegramMiniAppStatusView(View):
     def get(self, request):
         chat_id = (request.GET.get('chat_id') or '').strip()
         if not chat_id:
-            return JsonResponse({'connected': False, 'message': 'Siz tizimga ulanmagansiz.'}, status=401)
+            return JsonResponse({'connected': False, 'message': 'Сиз тизимга уланмагансиз.'}, status=401)
 
         profile = UserProfile.objects.filter(telegram_chat_id=chat_id).select_related('user').first()
         if not profile:
-            return JsonResponse({'connected': False, 'message': 'Siz tizimga ulanmagansiz.'}, status=404)
+            return JsonResponse({'connected': False, 'message': 'Сиз тизимга уланмагансиз.'}, status=404)
 
         return JsonResponse(
             {
                 'connected': True,
-                'message': 'Akkaunt topildi.',
+                'message': 'Аккаунт топилди.',
                 'user_id': profile.user_id,
                 'name': profile.user.get_full_name() or profile.user.username,
             }
@@ -1123,7 +1256,7 @@ class TelegramMiniAppAuthView(View):
         init_data = (request.POST.get('init_data') or '').strip()
         is_valid, payload = validate_telegram_init_data(init_data)
         if not is_valid:
-            return JsonResponse({'ok': False, 'message': 'Siz tizimga ulanmagansiz.'}, status=403)
+            return JsonResponse({'ok': False, 'message': 'Сиз тизимга уланмагансиз.'}, status=403)
 
         user_payload = payload.get('user', '')
         try:
@@ -1133,17 +1266,17 @@ class TelegramMiniAppAuthView(View):
 
         chat_id = str(user_data.get('id') or '').strip()
         if not chat_id:
-            return JsonResponse({'ok': False, 'message': 'Telegram foydalanuvchisi topilmadi.'}, status=400)
+            return JsonResponse({'ok': False, 'message': 'Telegram фойдаланувчиси топилмади.'}, status=400)
 
         profile = UserProfile.objects.filter(telegram_chat_id=chat_id).select_related('user').first()
         if not profile:
-            return JsonResponse({'ok': False, 'message': 'Siz tizimga ulanmagansiz.'}, status=403)
+            return JsonResponse({'ok': False, 'message': 'Сиз тизимга уланмагансиз.'}, status=403)
 
         login(request, profile.user)
         return JsonResponse(
             {
                 'ok': True,
-                'message': 'Akkaunt topildi.',
+                'message': 'Аккаунт топилди.',
                 'redirect_url': reverse('dashboard' if profile.user.is_superuser else 'order-list'),
             }
         )
@@ -1180,14 +1313,14 @@ class ProfileView(AuthRequiredMixin, View):
                     employee=request.user.employee_profile if hasattr(request.user, 'employee_profile') else None,
                     actor_name=request.user.get_full_name() or request.user.username,
                     action_type=ActionLog.ACTION_UPDATED,
-                    object_label='Profil paroli',
-                    message=f"{request.user.get_full_name() or request.user.username} profil parolini yangiladi",
+                    object_label='Профил пароли',
+                    message=f"{request.user.get_full_name() or request.user.username} профил паролини янгилади",
                     target_model='User',
                     target_id=str(request.user.pk),
                     details={'updated_fields': {'password': {'old': '***', 'new': '***'}}},
                 )
                 update_session_auth_hash(request, request.user)
-            messages.success(request, "Profil ma'lumotlari saqlandi.")
+            messages.success(request, "Профил маълумотлари сақланди.")
             return redirect('profile')
         return render(request, self.template_name, self._context(form, is_employee, request.user))
 
@@ -1253,7 +1386,7 @@ def build_shop_transactions(shop):
         rows.append(
             {
                 'date': order.order_date,
-                'type': 'Buyurtma',
+                'type': 'Буюртма',
                 'amount': -order.total_amount,
                 'order_id': order.id,
                 'note': order.note,
@@ -1266,7 +1399,7 @@ def build_shop_transactions(shop):
         rows.append(
             {
                 'date': order.order_date,
-                'type': f"To'lov (Buyurtma #{order.id})",
+                'type': f"To'lov (Буюртма #{order.id})",
                 'amount': order.paid_amount,
                 'order_id': order.id,
                 'note': order.note,

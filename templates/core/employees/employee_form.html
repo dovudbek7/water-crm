@@ -1,24 +1,37 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Xodim qo'shish{% endblock %}
-{% block page_title %}Xodim qo'shish{% endblock %}
+{% block title %}Ходим қўшиш{% endblock %}
+{% block page_title %}Ходим қўшиш{% endblock %}
 
 {% block content %}
 <section class="panel form-panel">
-  <h3>Yangi xodim</h3>
+  <h3>Янги ходим</h3>
   <form method="post" enctype="multipart/form-data" class="grid-form">
     {% csrf_token %}
     {% for field in form %}
     <div>
       <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-      {{ field }}
+      {% if field.name == 'photo' %}
+        <div class="photo-upload-wrap">
+          <div class="photo-preview-box" id="empPhotoPreview">
+            <div class="photo-placeholder" id="empPlaceholder"><span class="material-symbols-outlined">add_photo_alternate</span><span>Расм танлаш</span></div>
+            <div class="photo-upload-loader" id="empPhotoLoader" style="display:none;">
+              <div class="photo-progress-bar"><div class="photo-progress-fill" id="empFill"></div></div>
+              <span class="photo-progress-text" id="empProgressText">Ўқилмоқда...</span>
+            </div>
+          </div>
+          {{ field }}
+        </div>
+      {% else %}
+        {{ field }}
+      {% endif %}
       {{ field.errors }}
     </div>
     {% endfor %}
     <div class="form-actions">
-      <a class="btn btn-light" href="{% url 'employee-list' %}">Bekor</a>
-      <button class="btn btn-primary" type="submit">Saqlash</button>
+      <a class="btn btn-light" href="{% url 'employee-list' %}">Бекор</a>
+      <button class="btn btn-primary" type="submit">Сақлаш</button>
     </div>
   </form>
 </section>
@@ -26,4 +39,57 @@
 
 {% block extra_js %}
 <script src="{% static 'js/phone_format.js' %}"></script>
+<script>
+(function () {
+  var input = document.getElementById('id_photo');
+  var preview = document.getElementById('empPhotoPreview');
+  var loader = document.getElementById('empPhotoLoader');
+  var fill = document.getElementById('empFill');
+  var text = document.getElementById('empProgressText');
+  if (!input || !preview) return;
+
+  input.addEventListener('change', function () {
+    var file = this.files[0];
+    if (!file) return;
+
+    var placeholder = preview.querySelector('.photo-placeholder');
+    var existing = preview.querySelector('.photo-preview-img');
+    if (placeholder) placeholder.style.display = 'none';
+    if (existing) existing.style.display = 'none';
+
+    loader.style.display = 'flex';
+    fill.style.width = '0%';
+    text.textContent = '0 / ' + (file.size / 1024 / 1024).toFixed(1) + ' MB';
+
+    var reader = new FileReader();
+
+    reader.onprogress = function (e) {
+      if (!e.lengthComputable) return;
+      var pct = Math.round(e.loaded / e.total * 100);
+      var loaded = (e.loaded / 1024 / 1024).toFixed(1);
+      var total = (e.total / 1024 / 1024).toFixed(1);
+      fill.style.width = pct + '%';
+      text.textContent = loaded + ' / ' + total + ' MB';
+    };
+
+    reader.onload = function (e) {
+      fill.style.width = '100%';
+      text.textContent = 'Тайёр';
+      setTimeout(function () {
+        loader.style.display = 'none';
+        var img = preview.querySelector('.photo-preview-img');
+        if (!img) {
+          img = document.createElement('img');
+          img.className = 'photo-preview-img';
+          preview.insertBefore(img, loader);
+        }
+        img.src = e.target.result;
+        img.style.display = 'block';
+      }, 300);
+    };
+
+    reader.readAsDataURL(file);
+  });
+})();
+</script>
 {% endblock %}

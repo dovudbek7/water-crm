@@ -48,42 +48,42 @@ def _style_currency_column(sheet, col_letter, start_row, end_row):
 
 
 def _currency(value):
-    return f"{Decimal(value):,.0f} so'm"
+    return f"{Decimal(value):,.0f} сўм"
 
 
 def _signed_currency(value):
     amount = Decimal(value)
     if amount > 0:
-        return f"+{abs(amount):,.0f} so'm"
+        return f"+{abs(amount):,.0f} сўм"
     if amount < 0:
-        return f"-{abs(amount):,.0f} so'm"
-    return "0 so'm"
+        return f"-{abs(amount):,.0f} сўм"
+    return "0 сўм"
 
 
 def _order_balance_currency(remaining):
     amount = Decimal(remaining)
     if amount > 0:
-        return f"-{abs(amount):,.0f} so'm"
+        return f"-{abs(amount):,.0f} сўм"
     if amount < 0:
-        return f"+{abs(amount):,.0f} so'm"
-    return "0 so'm"
+        return f"+{abs(amount):,.0f} сўм"
+    return "0 сўм"
 
 
 def _shop_balance_currency(balance):
     amount = Decimal(balance)
     if amount < 0:
-        return f"-{abs(amount):,.0f} so'm"
+        return f"-{abs(amount):,.0f} сўм"
     if amount > 0:
-        return f"+{abs(amount):,.0f} so'm"
-    return "0 so'm"
+        return f"+{abs(amount):,.0f} сўм"
+    return "0 сўм"
 
 
 def export_orders_excel(orders):
     wb = Workbook()
     ws = wb.active
-    ws.title = "Buyurtmalar"
+    ws.title = "Буюртмаlar"
     _add_company_header(ws)
-    ws.append(['Buyurtma ID', "Do'kon", 'Sana', 'Jami summa', "To'langan", 'Qoldiq'])
+    ws.append(['Буюртма ID', "Дўкон", 'Сана', 'Jami summa', "To'langan", 'Qoldiq'])
     _style_header(ws, row=5)
 
     row_no = 5
@@ -118,14 +118,14 @@ def export_orders_excel(orders):
 def export_order_excel(order):
     wb = Workbook()
     ws = wb.active
-    ws.title = f"Buyurtma_{order.id}"
+    ws.title = f"Буюртма_{order.id}"
 
     _add_company_header(ws)
-    ws.append(['Buyurtma ID', order.id])
-    ws.append(["Do'kon", order.shop.name])
-    ws.append(['Sana', order.order_date.strftime('%d.%m.%Y')])
+    ws.append(['Буюртма ID', order.id])
+    ws.append(["Дўкон", order.shop.name])
+    ws.append(['Сана', order.order_date.strftime('%d.%m.%Y')])
     ws.append([])
-    ws.append(['Mahsulot', 'Soni', 'Narxi', 'Jami'])
+    ws.append(['Маҳсулот', 'Сони', 'Narxi', 'Jami'])
     _style_header(ws, row=9)
 
     start_items = 10
@@ -157,14 +157,14 @@ def export_order_excel(order):
 def export_shops_excel(shops):
     wb = Workbook()
     ws = wb.active
-    ws.title = "Do'konlar"
+    ws.title = "Дўконlar"
     _add_company_header(ws)
     ws.append([
-        "Do'kon nomi",
-        'Manzil',
+        "Дўкон номи",
+        'Манзил',
         'Telefon 1',
         'Telefon 2',
-        'Izoh',
+        'Изоҳ',
         'Jami olgan',
         "Jami to'lagan",
         'Balans',
@@ -209,12 +209,12 @@ def export_transactions_excel(shop, transactions):
     ws = wb.active
     ws.title = "Tranzaksiyalar"
     _add_company_header(ws)
-    ws.append(["Do'kon", shop.name])
-    ws.append(['Manzil', shop.address or '-'])
+    ws.append(["Дўкон", shop.name])
+    ws.append(['Манзил', shop.address or '-'])
     ws.append(['Telefonlar', f"{shop.phone_primary or '-'} / {shop.phone_secondary or '-'}"])
-    ws.append(['Izoh', shop.note or '-'])
+    ws.append(['Изоҳ', shop.note or '-'])
     ws.append([])
-    ws.append(['Sana', 'Turi', 'Miqdor', 'Buyurtma ID', 'Izoh'])
+    ws.append(['Сана', 'Turi', 'Миқдор', 'Буюртма ID', 'Изоҳ'])
     _style_header(ws, row=10)
 
     row_no = 10
@@ -251,7 +251,7 @@ def export_analytics_excel(payload):
     ws.append(['Hisobot oyi', payload['selected_month']])
     ws.append(['Bu oy savdo summasi', payload['month_sales']])
     ws.append([])
-    ws.append(['Mahsulot', 'Sotilgan dona', 'Tushgan pul'])
+    ws.append(['Маҳсулот', 'Sotilgan dona', 'Tushgan pul'])
     _style_header(ws, row=8)
 
     row_no = 8
@@ -320,11 +320,11 @@ def _build_professional_pdf(title, subtitle, headers, rows, numeric_cols, summar
     commands.append('0.12 0.35 0.72 rg')
     _pdf_rect(commands, left, top - 8, 130, 20, fill=True)
     commands.append('0 g')
-    _pdf_text(commands, 'Suv Savdo Tizimi', left + 8, top - 2, size=10, bold=True)
+    _pdf_text(commands, 'Сув Савдо Тизими', left + 8, top - 2, size=10, bold=True)
     _pdf_text(commands, title, left, top - 30, size=15, bold=True)
     _pdf_text(commands, f"{COMPANY_NAME} | {COMPANY_PHONE_1} | {COMPANY_PHONE_2}", left, top - 46, size=8)
     _pdf_text(commands, subtitle, left, top - 60, size=10)
-    _pdf_text(commands, f"Sana: {datetime.now().strftime('%d.%m.%Y %H:%M')}", left + 390, top - 60, size=8)
+    _pdf_text(commands, f"Сана: {datetime.now().strftime('%d.%m.%Y %H:%M')}", left + 390, top - 60, size=8)
 
     y = top - 86
 
@@ -413,9 +413,9 @@ def export_orders_pdf(orders):
         paid += order.paid_amount
 
     data = _build_professional_pdf(
-        title='Buyurtmalar hisoboti',
+        title='Буюртмалар ҳисоботи',
         subtitle='Umumiy buyurtmalar ro\'yxati',
-        headers=['Buyurtma ID', "Do'kon", 'Sana', 'Jami', "To'langan", 'Qoldiq'],
+        headers=['Буюртма ID', "Дўкон", 'Сана', 'Jami', "To'langan", 'Qoldiq'],
         rows=rows,
         numeric_cols={3, 4, 5},
         summary_lines=[
@@ -433,14 +433,14 @@ def export_order_pdf(order):
         rows.append([item.product.name, f'{item.quantity:,}', _currency(item.price_at_sale), _currency(item.total_amount)])
 
     data = _build_professional_pdf(
-        title=f'Buyurtma #{order.id} hisoboti',
-        subtitle=f"Do'kon: {order.shop.name} | Sana: {order.order_date.strftime('%d.%m.%Y')}",
-        headers=['Mahsulot', 'Soni', 'Narxi', 'Jami'],
+        title=f'Буюртма #{order.id} ҳисоботи',
+        subtitle=f"Дўкон: {order.shop.name} | Сана: {order.order_date.strftime('%d.%m.%Y')}",
+        headers=['Маҳсулот', 'Сони', 'Narxi', 'Jami'],
         rows=rows,
         numeric_cols={1, 2, 3},
         summary_lines=[
             f"Umumiy summa: {_currency(order.total_amount)}",
-            f"To'langan summa: {_currency(order.paid_amount)}",
+            f"Тўланган сумма: {_currency(order.paid_amount)}",
             f"Balans: {_order_balance_currency(order.remaining_balance)}",
         ],
     )
@@ -464,9 +464,9 @@ def export_shops_pdf(shops):
         )
 
     data = _build_professional_pdf(
-        title="Do'konlar hisoboti",
-        subtitle="Do'konlar bo'yicha umumiy ko'rsatkichlar",
-        headers=["Do'kon", 'Manzil', 'Tel-1', 'Tel-2', 'Izoh', 'Jami olgan', "Jami to'lagan", 'Balans'],
+        title="Дўконлар ҳисоботи",
+        subtitle="Дўконлар бўйича умумий кўрсаткичлар",
+        headers=["Дўкон", 'Манзил', 'Tel-1', 'Tel-2', 'Изоҳ', 'Jami olgan', "Jami to'lagan", 'Balans'],
         rows=rows,
         numeric_cols={5, 6, 7},
         summary_lines=[f"Jami do'konlar: {len(rows):,}"],
@@ -480,9 +480,9 @@ def export_analytics_pdf(payload):
         rows.append([row['name'], f"{int(row['quantity']):,}", _currency(row['revenue'])])
 
     data = _build_professional_pdf(
-        title=f"Analitika hisoboti ({payload['selected_month']})",
-        subtitle='Mahsulotlar kesimida savdo natijalari',
-        headers=['Mahsulot', 'Sotilgan dona', 'Tushgan pul'],
+        title=f"Аналитика ҳисоботи ({payload['selected_month']})",
+        subtitle='Маҳсулотlar kesimida savdo natijalari',
+        headers=['Маҳсулот', 'Sotilgan dona', 'Tushgan pul'],
         rows=rows,
         numeric_cols={1, 2},
         summary_lines=[
@@ -507,15 +507,15 @@ def export_transactions_pdf(shop, transactions):
         )
 
     data = _build_professional_pdf(
-        title=f"Do'kon tarixi: {shop.name}",
-        subtitle="Buyurtma, to'lov va depozit tranzaksiyalari",
-        headers=['Sana', 'Turi', 'Miqdor', 'Buyurtma ID', 'Izoh'],
+        title=f"Дўкон tarixi: {shop.name}",
+        subtitle="Буюртма, to'lov va depozit tranzaksiyalari",
+        headers=['Сана', 'Turi', 'Миқдор', 'Буюртма ID', 'Изоҳ'],
         rows=rows,
         numeric_cols={2},
         summary_lines=[
-            f"Manzil: {shop.address or '-'}",
+            f"Манзил: {shop.address or '-'}",
             f"Telefonlar: {shop.phone_primary or '-'} / {shop.phone_secondary or '-'}",
-            f"Izoh: {shop.note or '-'}",
+            f"Изоҳ: {shop.note or '-'}",
             f"Jami yozuvlar: {len(rows):,}",
             f"Joriy balans: {_shop_balance_currency(shop.balance)}",
         ],
@@ -526,9 +526,9 @@ def export_transactions_pdf(shop, transactions):
 def export_employees_excel(employees):
     wb = Workbook()
     ws = wb.active
-    ws.title = 'Xodimlar'
+    ws.title = 'Ходимлар'
     _add_company_header(ws)
-    ws.append(['F.I.Sh', 'Lavozim', 'Telefon 1', 'Telefon 2', 'Buyurtmalar', 'Yetkazishlar'])
+    ws.append(['F.I.Sh', 'Лавозим', 'Telefon 1', 'Telefon 2', 'Буюртмаlar', 'Yetkazishlar'])
     _style_header(ws, row=5)
 
     row_no = 5
@@ -557,13 +557,13 @@ def export_employees_excel(employees):
 def export_employee_detail_excel(employee):
     wb = Workbook()
     ws = wb.active
-    ws.title = 'Xodim'
+    ws.title = 'Ходим'
     _add_company_header(ws)
-    ws.append(['Xodim', str(employee)])
-    ws.append(['Lavozim', employee.get_role_display()])
+    ws.append(['Ходим', str(employee)])
+    ws.append(['Лавозим', employee.get_role_display()])
     ws.append(['Telefon 1', employee.phone_primary])
     ws.append(['Telefon 2', employee.phone_secondary or '-'])
-    ws.append(['Buyurtmalar', employee.total_orders_taken])
+    ws.append(['Буюртмаlar', employee.total_orders_taken])
     ws.append(['Yetkazishlar', employee.total_deliveries])
     ws.column_dimensions['A'].width = 20
     ws.column_dimensions['B'].width = 35
@@ -584,9 +584,9 @@ def export_employees_pdf(employees):
         )
 
     data = _build_professional_pdf(
-        title='Xodimlar hisoboti',
-        subtitle='Xodimlar ro‘yxati va ko‘rsatkichlari',
-        headers=['F.I.Sh', 'Lavozim', 'Telefon', 'Buyurtmalar', 'Yetkazishlar'],
+        title='Ходимлар ҳисоботи',
+        subtitle='Ходимлар ro‘yxati va ko‘rsatkichlari',
+        headers=['F.I.Sh', 'Лавозим', 'Telefon', 'Буюртмаlar', 'Yetkazishlar'],
         rows=rows,
         numeric_cols={3, 4},
         summary_lines=[f'Jami xodimlar: {len(rows):,}'],
@@ -596,18 +596,18 @@ def export_employees_pdf(employees):
 
 def export_employee_detail_pdf(employee):
     rows = [
-        ['Lavozim', employee.get_role_display()],
+        ['Лавозим', employee.get_role_display()],
         ['Telefon 1', employee.phone_primary],
         ['Telefon 2', employee.phone_secondary or '-'],
-        ['Buyurtmalar', f'{employee.total_orders_taken:,}'],
+        ['Буюртмаlar', f'{employee.total_orders_taken:,}'],
         ['Yetkazishlar', f'{employee.total_deliveries:,}'],
     ]
     data = _build_professional_pdf(
-        title=f'Xodim: {employee}',
-        subtitle='Xodim batafsil ma’lumotlari',
+        title=f'Ходим: {employee}',
+        subtitle='Ходим batafsil ma’lumotlari',
         headers=['Maydon', 'Qiymat'],
         rows=rows,
         numeric_cols=set(),
-        summary_lines=[f'Xodim ID: {employee.id}'],
+        summary_lines=[f'Ходим ID: {employee.id}'],
     )
     return pdf_response(f'xodim_{employee.id}.pdf', data)

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tizimga kirish</title>
+  <title>Тизимга кириш</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,8 +17,8 @@
     <div class="auth-logo">
       <span class="material-symbols-outlined">water_drop</span>
     </div>
-    <h1>Suv Savdo Tizimi</h1>
-    <p>Boshqaruv paneliga kirish</p>
+    <h1>Сув Савдо Тизими</h1>
+    <p>Бошқарув панелига кириш</p>
 
     <form method="post" class="auth-form">
       {% csrf_token %}
@@ -26,17 +26,17 @@
       {% if form.non_field_errors %}
         <div class="error-list">{{ form.non_field_errors }}</div>
       {% endif %}
-      <label for="id_username">Telefon raqam</label>
+      <label for="id_username">Телефон рақам</label>
       {{ form.username }}
 
-      <label for="id_password">Parol</label>
+      <label for="id_password">Парол</label>
       {{ form.password }}
 
-      <button type="submit" class="btn btn-primary w-full">Kirish</button>
+      <button type="submit" class="btn btn-primary w-full">Кириш</button>
     </form>
 
     <div style="margin-top:12px;">
-      <button type="button" id="adminLoginToggle" class="btn btn-light w-full">Adminlar uchun kirish</button>
+      <button type="button" id="adminLoginToggle" class="btn btn-light w-full">Админлар учун кириш</button>
     </div>
 
     <div id="adminLoginBox" style="margin-top:12px;{% if not open_admin_box %}display:none;{% endif %}">
@@ -46,13 +46,13 @@
         {% if admin_form.non_field_errors %}
           <div class="error-list">{{ admin_form.non_field_errors }}</div>
         {% endif %}
-        <label for="{{ admin_form.username.id_for_label }}">Foydalanuvchi nomi</label>
+        <label for="{{ admin_form.username.id_for_label }}">Фойдаланувчи номи</label>
         {{ admin_form.username }}
 
-        <label for="{{ admin_form.password.id_for_label }}">Parol</label>
+        <label for="{{ admin_form.password.id_for_label }}">Парол</label>
         {{ admin_form.password }}
 
-        <button type="submit" class="btn btn-primary w-full">Admin sifatida kirish</button>
+        <button type="submit" class="btn btn-primary w-full">Админ сифатида кириш</button>
       </form>
     </div>
   </div>

@@ -22,7 +22,7 @@ if (mapEl && latInput && lngInput && typeof L !== 'undefined') {
     latInput.value = lat.toFixed(6);
     lngInput.value = lng.toFixed(6);
     if (locationText) {
-      locationText.textContent = `Tanlangan nuqta: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      locationText.textContent = `Танланган нуқта: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
     }
   }
 

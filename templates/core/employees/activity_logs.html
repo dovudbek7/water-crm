@@ -1,22 +1,22 @@
 {% extends 'base.html' %}
 
-{% block title %}Faollik loglari{% endblock %}
-{% block page_title %}Xodim va admin faollik loglari{% endblock %}
+{% block title %}Фаоллик логлари{% endblock %}
+{% block page_title %}Ходим ва админ фаоллик логлари{% endblock %}
 
 {% block content %}
 <section class="panel">
   <form method="get" class="search-inline">
     <select name="employee">
-      <option value="">Barchasi</option>
+      <option value="">Барчаси</option>
       {% for e in employees %}
       <option value="{{ e.pk }}" {% if selected_employee == e.pk|stringformat:'s' %}selected{% endif %}>{{ e }}</option>
       {% endfor %}
     </select>
-    <button class="btn btn-light" type="submit">Filtrlash</button>
+    <button class="btn btn-light" type="submit">Филтрлаш</button>
   </form>
   <div class="table-wrap" style="margin-top:12px;">
     <table>
-      <thead><tr><th>Sana</th><th>Foydalanuvchi</th><th>Amal turi</th><th>Obyekt</th><th>Xabar</th><th>Ko'rish</th></tr></thead>
+      <thead><tr><th>Сана</th><th>Фойдаланувчи</th><th>Амал тури</th><th>Обект</th><th>Хабар</th><th>Кўриш</th></tr></thead>
       <tbody>
       {% for l in logs %}
         <tr>
@@ -38,7 +38,7 @@
           </td>
         </tr>
       {% empty %}
-        <tr><td colspan="6">Loglar yo'q.</td></tr>
+        <tr><td colspan="6">Логлар йўқ.</td></tr>
       {% endfor %}
       </tbody>
     </table>
@@ -49,28 +49,28 @@
   <div class="custom-modal-backdrop" id="logModalBackdrop"></div>
   <div class="custom-modal-dialog">
     <div class="custom-modal-header">
-      <h3>Log tafsiloti</h3>
+      <h3>Лог тафсилоти</h3>
       <button type="button" class="icon-btn" id="logModalClose"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="custom-modal-body">
       <div class="grid-form">
-        <div><label>Foydalanuvchi</label><input id="logActor" type="text" readonly></div>
-        <div><label>Amal</label><input id="logAction" type="text" readonly></div>
-        <div><label>Obyekt</label><input id="logObject" type="text" readonly></div>
-        <div><label>Sana</label><input id="logDate" type="text" readonly></div>
+        <div><label>Фойдаланувчи</label><input id="logActor" type="text" readonly></div>
+        <div><label>Амал</label><input id="logAction" type="text" readonly></div>
+        <div><label>Обект</label><input id="logObject" type="text" readonly></div>
+        <div><label>Сана</label><input id="logDate" type="text" readonly></div>
       </div>
       <div style="margin-top:12px;">
-        <label>Qisqa xabar</label>
+        <label>Қисқа хабар</label>
         <textarea id="logMessage" rows="2" readonly></textarea>
       </div>
       <div class="table-wrap" style="margin-top:12px;">
         <table>
-          <thead><tr><th>Maydon</th><th>Eski qiymat</th><th>Yangi qiymat</th></tr></thead>
-          <tbody id="logDiffRows"><tr><td colspan="3">Ma'lumot yo'q</td></tr></tbody>
+          <thead><tr><th>Майдон</th><th>Ески қиймат</th><th>Янги қиймат</th></tr></thead>
+          <tbody id="logDiffRows"><tr><td colspan="3">Ма'лумот йўқ</td></tr></tbody>
         </table>
       </div>
       <div style="margin-top:12px;">
-        <label>Yaratilgan/O'chirilgan ma'lumotlar</label>
+        <label>Яратилган/Ўчирилган ма'лумотлар</label>
         <textarea id="logSnapshot" rows="5" readonly></textarea>
       </div>
     </div>

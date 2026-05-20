@@ -34,6 +34,10 @@ from core.views import (
     ProductListView,
     ProductUpdateView,
     ProfileView,
+    RegionCreateView,
+    RegionDeleteView,
+    RegionListView,
+    RegionUpdateView,
     ShopCreateView,
     ShopDeleteView,
     ShopDepositCreateView,
@@ -69,6 +73,11 @@ urlpatterns = [
 
     path('', HomeRedirectView.as_view(), name='home'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
+
+    path('regionlar/', RegionListView.as_view(), name='region-list'),
+    path('regionlar/yangi/', RegionCreateView.as_view(), name='region-create'),
+    path('regionlar/<int:pk>/tahrirlash/', RegionUpdateView.as_view(), name='region-update'),
+    path('regionlar/<int:pk>/ochirish/', RegionDeleteView.as_view(), name='region-delete'),
 
     path('mahsulotlar/', ProductListView.as_view(), name='product-list'),
     path('mahsulotlar/yangi/', ProductCreateView.as_view(), name='product-create'),

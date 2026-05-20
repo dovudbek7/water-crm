@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Регион формаси{% endblock %}
+{% block page_title %}Регионлар{% endblock %}
+
+{% block content %}
+<section class="panel form-panel">
+  <h3>{% if object %}Регионни таҳрирлаш{% else %}Янги регион{% endif %}</h3>
+  <form method="post" class="grid-form">
+    {% csrf_token %}
+    <div>
+      <label for="id_name">Регион номи</label>
+      {{ form.name }}
+      {{ form.name.errors }}
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'region-list' %}" class="btn btn-light">Бекор қилиш</a>
+      <button type="submit" class="btn btn-primary">Сақлаш</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

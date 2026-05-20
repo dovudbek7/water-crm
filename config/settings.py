@@ -13,8 +13,13 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 # Vergul bilan yozilgan hostlarni listga aylantirish
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
-# CSRF uchun ham xuddi shunday
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+# CSRF
+_csrf_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+_csrf_raw = (
+    ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://0.0.0.0:8000']
+    + [o.strip().rstrip('/') for o in _csrf_env.split(',') if o.strip()]
+)
+CSRF_TRUSTED_ORIGINS = [o for o in _csrf_raw if o.startswith(('http://', 'https://'))]
 # ----------------------------------
 
 INSTALLED_APPS = [
@@ -31,7 +36,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'core.middleware.OpenCsrfMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

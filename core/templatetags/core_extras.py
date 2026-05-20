@@ -14,13 +14,13 @@ def som(value):
     try:
         amount = Decimal(value)
     except (InvalidOperation, TypeError):
-        return "0 so'm"
+        return "0 сўм"
 
     rounded = amount.quantize(Decimal('0.01'))
     formatted = f'{rounded:,.2f}'
     if formatted.endswith('.00'):
         formatted = formatted[:-3]
-    return f"{formatted} so'm"
+    return f"{formatted} сўм"
 
 
 @register.filter
@@ -43,7 +43,7 @@ def _currency_abs(amount: Decimal):
     formatted = f'{rounded:,.2f}'
     if formatted.endswith('.00'):
         formatted = formatted[:-3]
-    return f"{formatted} so'm"
+    return f"{formatted} сўм"
 
 
 @register.filter
@@ -65,7 +65,7 @@ def order_balance_label(value):
         return f"-{_currency_abs(amount)}"
     if amount < 0:
         return f"+{_currency_abs(amount)}"
-    return "0 so'm"
+    return "0 сўм"
 
 
 @register.filter
@@ -96,7 +96,7 @@ def shop_balance_label(value):
         return f"-{_currency_abs(amount)}"
     if amount > 0:
         return f"+{_currency_abs(amount)}"
-    return "0 so'm"
+    return "0 сўм"
 
 
 @register.filter

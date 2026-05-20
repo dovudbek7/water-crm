@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Profil{% endblock %}
-{% block page_title %}Mening profilim{% endblock %}
+{% block title %}Профил{% endblock %}
+{% block page_title %}Менинг профилим{% endblock %}
 
 {% block content %}
 <section class="panel form-panel">
-  <h3>Profil ma'lumotlari</h3>
+  <h3>Профил ма'лумотлари</h3>
   <form method="post" enctype="multipart/form-data" class="grid-form">
     {% csrf_token %}
     {% for field in form %}
@@ -17,34 +17,34 @@
       </div>
     {% endfor %}
     <div class="form-actions">
-      <button class="btn btn-primary" type="submit">Yangilash</button>
+      <button class="btn btn-primary" type="submit">Янгилаш</button>
     </div>
   </form>
 </section>
 
 <!-- <section class="panel">
   <div class="panel-head">
-    <h3>Telegram ulash</h3>
+    <h3>Телеграм улаш</h3>
     {% if telegram_profile.telegram_connected %}
-      <span class="badge badge-status-done">Ulangan</span>
+      <span class="badge badge-status-done">Уланган</span>
     {% else %}
-      <span class="badge badge-status-new">Ulanmagan</span>
+      <span class="badge badge-status-new">Уланмаган</span>
     {% endif %}
   </div>
   <div class="grid-form single-row">
     <div>
-      <label>Telegram holati</label>
+      <label>Телеграм ҳолати</label>
       <input type="text" readonly value="{% if telegram_profile.telegram_connected %}Ulangan{% else %}Ulanmagan{% endif %}">
     </div>
     <div class="form-actions">
       <form method="post" action="{% url 'telegram-link-generate' %}">
         {% csrf_token %}
-        <button class="btn btn-light" type="submit">Telegram ulash</button>
+        <button class="btn btn-light" type="submit">Телеграм улаш</button>
       </form>
       {% if telegram_profile.telegram_connected %}
         <form method="post" action="{% url 'telegram-disconnect' %}">
           {% csrf_token %}
-          <button class="btn btn-danger" type="submit">Ulanishni o'chirish</button>
+          <button class="btn btn-danger" type="submit">Уланишни ўчириш</button>
         </form>
       {% endif %}
     </div>

@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, get_user_model
 from django.db.models import Q
 from django.forms import formset_factory
 
-from core.models import Employee, Order, Product, Shop, ShopDeposit, UserProfile
+from core.models import Employee, Order, Product, Region, Shop, ShopDeposit, UserProfile
 
 
 PHONE_RE = re.compile(r'\D')
@@ -31,11 +31,11 @@ def normalize_uz_phone(value):
 
 class LoginForm(forms.Form):
     username = forms.CharField(
-        label='Telefon raqam',
+        label='Телефон рақам',
         max_length=25,
         widget=forms.TextInput(attrs={'placeholder': '+998 90-123-45-67', 'class': 'phone-input'}),
     )
-    password = forms.CharField(label='Parol', widget=forms.PasswordInput(attrs={'placeholder': 'Parol'}))
+    password = forms.CharField(label='Парол', widget=forms.PasswordInput(attrs={'placeholder': 'Парол'}))
 
     def clean(self):
         cleaned_data = super().clean()
@@ -47,9 +47,9 @@ class LoginForm(forms.Form):
             emp = Employee.objects.filter(Q(phone_primary=username) | Q(phone_secondary=username)).select_related('user').first()
             user = authenticate(username=emp.user.username, password=password) if emp else None
             if not user:
-                raise forms.ValidationError("Telefon yoki parol noto'g'ri.")
+                raise forms.ValidationError("Телефон ёки парол нотўғри.")
             if not user.is_active:
-                raise forms.ValidationError('Foydalanuvchi faol emas.')
+                raise forms.ValidationError('Фойдаланувчи фаол эмас.')
             cleaned_data['user'] = user
 
         return cleaned_data
@@ -57,13 +57,13 @@ class LoginForm(forms.Form):
 
 class AdminLoginForm(forms.Form):
     username = forms.CharField(
-        label='Foydalanuvchi nomi',
+        label='Фойдаланувчи номи',
         max_length=150,
-        widget=forms.TextInput(attrs={'placeholder': 'Foydalanuvchi nomi'}),
+        widget=forms.TextInput(attrs={'placeholder': 'Фойдаланувчи номи'}),
     )
     password = forms.CharField(
-        label='Parol',
-        widget=forms.PasswordInput(attrs={'placeholder': 'Parol'}),
+        label='Парол',
+        widget=forms.PasswordInput(attrs={'placeholder': 'Парол'}),
     )
 
     def clean(self):
@@ -74,14 +74,22 @@ class AdminLoginForm(forms.Form):
         if username and password:
             user = authenticate(username=username, password=password)
             if not user:
-                raise forms.ValidationError("Foydalanuvchi nomi yoki parol noto'g'ri.")
+                raise forms.ValidationError("Фойдаланувчи номи ёки парол нотўғри.")
             if not user.is_active:
-                raise forms.ValidationError('Foydalanuvchi faol emas.')
+                raise forms.ValidationError('Фойдаланувчи фаол эмас.')
             if not (user.is_staff or user.is_superuser):
-                raise forms.ValidationError("Siz admin sifatida kirish huquqiga ega emassiz.")
+                raise forms.ValidationError("Сиз админ сифатида кириш ҳуқуқига эга эмассиз.")
             cleaned_data['user'] = user
 
         return cleaned_data
+
+
+class RegionForm(forms.ModelForm):
+    class Meta:
+        model = Region
+        fields = ('name',)
+        labels = {'name': 'Регион номи'}
+        widgets = {'name': forms.TextInput(attrs={'placeholder': 'Масалан: Тошкент вилояти'})}
 
 
 class ProductForm(forms.ModelForm):
@@ -95,6 +103,7 @@ class ShopForm(forms.ModelForm):
         model = Shop
         fields = (
             'name',
+            'region',
             'address',
             'phone_primary',
             'phone_secondary',
@@ -106,6 +115,15 @@ class ShopForm(forms.ModelForm):
         widgets = {
             'latitude': forms.HiddenInput(),
             'longitude': forms.HiddenInput(),
+        }
+        labels = {
+            'name': 'Дўкон номи',
+            'region': 'Регион',
+            'address': 'Манзил',
+            'phone_primary': 'Телефон 1',
+            'phone_secondary': 'Телефон 2',
+            'note': 'Изоҳ',
+            'photo': 'Дўкон расми',
         }
 
     def clean_phone_primary(self):
@@ -134,8 +152,8 @@ class DeliveryCompleteForm(forms.ModelForm):
 
 
 class OrderItemForm(forms.Form):
-    product = forms.ModelChoiceField(queryset=Product.objects.all(), label='Mahsulot')
-    quantity = forms.IntegerField(min_value=1, label='Soni')
+    product = forms.ModelChoiceField(queryset=Product.objects.all(), label='Маҳсулот')
+    quantity = forms.IntegerField(min_value=1, label='Сони')
 
 
 class BaseOrderItemFormSet(forms.BaseFormSet):
@@ -148,7 +166,7 @@ class BaseOrderItemFormSet(forms.BaseFormSet):
                 valid_rows += 1
 
         if valid_rows == 0:
-            raise forms.ValidationError("Kamida bitta mahsulot qo'shing.")
+            raise forms.ValidationError("Камида битта маҳсулот қўшинг.")
 
 
 OrderItemFormSet = formset_factory(
@@ -170,12 +188,12 @@ class ShopDepositForm(forms.ModelForm):
 
 class EmployeeCreateForm(forms.Form):
     photo = forms.FileField(required=False)
-    first_name = forms.CharField(max_length=150, label='Ism')
-    last_name = forms.CharField(max_length=150, label='Familiya')
-    phone_primary = forms.CharField(max_length=25, label='Telefon 1')
-    phone_secondary = forms.CharField(max_length=25, required=False, label='Telefon 2')
-    role = forms.ChoiceField(choices=Employee.ROLE_CHOICES, label='Lavozim')
-    password = forms.CharField(label='Parol', widget=forms.PasswordInput)
+    first_name = forms.CharField(max_length=150, label='Исм')
+    last_name = forms.CharField(max_length=150, label='Фамилия')
+    phone_primary = forms.CharField(max_length=25, label='Телефон 1')
+    phone_secondary = forms.CharField(max_length=25, required=False, label='Телефон 2')
+    role = forms.ChoiceField(choices=Employee.ROLE_CHOICES, label='Лавозим')
+    password = forms.CharField(label='Парол', widget=forms.PasswordInput)
 
     def clean_phone_primary(self):
         return normalize_uz_phone(self.cleaned_data.get('phone_primary'))
@@ -213,17 +231,17 @@ class EmployeeCreateForm(forms.Form):
 
 
 class EmployeeUpdateForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=150, label='Ism')
-    last_name = forms.CharField(max_length=150, label='Familiya')
+    first_name = forms.CharField(max_length=150, label='Исм')
+    last_name = forms.CharField(max_length=150, label='Фамилия')
 
     class Meta:
         model = Employee
         fields = ('photo', 'phone_primary', 'phone_secondary', 'role')
         labels = {
-            'photo': 'Rasm',
-            'phone_primary': 'Telefon 1',
-            'phone_secondary': 'Telefon 2',
-            'role': 'Lavozim',
+            'photo': 'Расм',
+            'phone_primary': 'Телефон 1',
+            'phone_secondary': 'Телефон 2',
+            'role': 'Лавозим',
         }
 
     def __init__(self, *args, **kwargs):
@@ -249,16 +267,16 @@ class EmployeeUpdateForm(forms.ModelForm):
 
 
 class UserProfileForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=150, label='Ism')
-    last_name = forms.CharField(max_length=150, label='Familiya')
+    first_name = forms.CharField(max_length=150, label='Исм')
+    last_name = forms.CharField(max_length=150, label='Фамилия')
     new_password = forms.CharField(
         required=False,
-        label='Yangi parol',
+        label='Янги парол',
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
     )
     new_password_confirm = forms.CharField(
         required=False,
-        label='Yangi parol (takror)',
+        label='Янги паролни такрорланг',
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
     )
 
@@ -266,9 +284,9 @@ class UserProfileForm(forms.ModelForm):
         model = UserProfile
         fields = ('photo', 'phone_primary', 'phone_secondary')
         labels = {
-            'photo': 'Profil rasmi',
-            'phone_primary': 'Telefon 1',
-            'phone_secondary': 'Telefon 2',
+            'photo': 'Профил расми',
+            'phone_primary': 'Телефон 1',
+            'phone_secondary': 'Телефон 2',
         }
 
     def __init__(self, *args, user=None, allow_password=True, **kwargs):
@@ -296,9 +314,9 @@ class UserProfileForm(forms.ModelForm):
             p2 = cleaned.get('new_password_confirm') or ''
             if p1 or p2:
                 if p1 != p2:
-                    raise forms.ValidationError('Yangi parollar mos emas.')
+                    raise forms.ValidationError('Янги паролlar мос эмас.')
                 if len(p1) < 6:
-                    raise forms.ValidationError("Parol kamida 6 belgidan iborat bo'lishi kerak.")
+                    raise forms.ValidationError("Парол камида 6 белгидан иборат бўлиши керак.")
         return cleaned
 
     def save(self, commit=True):
@@ -318,19 +336,19 @@ class UserProfileForm(forms.ModelForm):
 
 
 class EmployeeAdminProfileForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=150, label='Ism')
-    last_name = forms.CharField(max_length=150, label='Familiya')
-    new_password = forms.CharField(required=False, label='Yangi parol', widget=forms.PasswordInput)
-    new_password_confirm = forms.CharField(required=False, label='Yangi parol (takror)', widget=forms.PasswordInput)
+    first_name = forms.CharField(max_length=150, label='Исм')
+    last_name = forms.CharField(max_length=150, label='Фамилия')
+    new_password = forms.CharField(required=False, label='Янги парол', widget=forms.PasswordInput)
+    new_password_confirm = forms.CharField(required=False, label='Янги парол (takror)', widget=forms.PasswordInput)
 
     class Meta:
         model = Employee
         fields = ('photo', 'phone_primary', 'phone_secondary', 'role')
         labels = {
-            'photo': 'Profil rasmi',
-            'phone_primary': 'Telefon 1',
-            'phone_secondary': 'Telefon 2',
-            'role': 'Lavozim',
+            'photo': 'Профил расми',
+            'phone_primary': 'Телефон 1',
+            'phone_secondary': 'Телефон 2',
+            'role': 'Лавозим',
         }
 
     def __init__(self, *args, **kwargs):
@@ -351,9 +369,9 @@ class EmployeeAdminProfileForm(forms.ModelForm):
         p2 = cleaned.get('new_password_confirm') or ''
         if p1 or p2:
             if p1 != p2:
-                raise forms.ValidationError('Yangi parollar mos emas.')
+                raise forms.ValidationError('Янги паролlar мос эмас.')
             if len(p1) < 6:
-                raise forms.ValidationError("Parol kamida 6 belgidan iborat bo'lishi kerak.")
+                raise forms.ValidationError("Парол камида 6 белгидан иборат бўлиши керак.")
         return cleaned
 
     def save(self, commit=True):

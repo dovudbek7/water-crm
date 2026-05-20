@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Регионни ўчириш{% endblock %}
+{% block page_title %}Регионни ўчириш{% endblock %}
+
+{% block content %}
+<section class="panel form-panel">
+  <h3>Ўчиришни тасдиқлаш</h3>
+  <p>Сиз <strong>{{ object.name }}</strong> регионини ўчирмоқчисиз.</p>
+  {% if object.shops.count %}
+    <p class="alert error">Диққат! Бу регионга <strong>{{ object.shops.count }}</strong> та дўкон боғлиқ. Регион ўчирилса, дўконларда регион бўш қолади.</p>
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <a href="{% url 'region-list' %}" class="btn btn-light">Бекор қилиш</a>
+      <button type="submit" class="btn btn-danger">Ҳа, ўчириш</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

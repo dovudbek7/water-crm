@@ -7,7 +7,7 @@ const remainingTotalInput = document.getElementById('remainingTotal');
 const paidAmountInput = document.getElementById('id_paid_amount');
 
 function formatSom(value) {
-  return `${Number(value || 0).toLocaleString('en-US')} so'm`;
+  return `${Number(value || 0).toLocaleString('en-US')} сўм`;
 }
 
 function parseNumber(value) {

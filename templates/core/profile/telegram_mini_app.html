@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telegram kirish</title>
+  <title>Телеграм кириш</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,10 +17,10 @@
     <div class="auth-logo">
       <span class="material-symbols-outlined">smartphone</span>
     </div>
-    <h1>Telegram orqali kirish</h1>
-    <p id="miniAppMessage">Tekshirilmoqda...</p>
+    <h1>Телеграм орқали кириш</h1>
+    <p id="miniAppMessage">Текширилмоқда...</p>
     <div id="miniAppActions" style="display:none; margin-top:16px;">
-      <a id="miniAppOpenBtn" href="#" class="btn btn-primary w-full">Tizimni ochish</a>
+      <a id="miniAppOpenBtn" href="#" class="btn btn-primary w-full">Тизимни очиш</a>
     </div>
   </div>
 
@@ -34,7 +34,7 @@
       const tg = window.Telegram?.WebApp;
       const initData = tg?.initData || '';
       if (!initData) {
-        messageEl.textContent = "Siz tizimga ulanmagansiz.";
+        messageEl.textContent = "Сиз тизимга уланмагансиз.";
         return;
       }
 
@@ -48,16 +48,16 @@
         });
         const data = await response.json();
         if (!response.ok || !data.ok) {
-          messageEl.textContent = data.message || "Siz tizimga ulanmagansiz.";
+          messageEl.textContent = data.message || "Сиз тизимга уланмагансиз.";
           return;
         }
 
-        messageEl.textContent = "Akkaunt topildi. Tizimga yo'naltirilmoqda.";
+        messageEl.textContent = "Аккаунт топилди. Тизимга йўналтирилмоқда.";
         openBtn.href = data.redirect_url;
         actionsEl.style.display = 'block';
         window.location.href = data.redirect_url;
       } catch (error) {
-        messageEl.textContent = "Tekshirishda xatolik yuz berdi.";
+        messageEl.textContent = "Текширишда хатолик юз берди.";
       }
     }
 
