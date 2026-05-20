@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telegram kirish</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="auth-body">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="material-symbols-outlined">smartphone</span>
+    </div>
+    <h1>Telegram orqali kirish</h1>
+    <p id="miniAppMessage">Tekshirilmoqda...</p>
+    <div id="miniAppActions" style="display:none; margin-top:16px;">
+      <a id="miniAppOpenBtn" href="#" class="btn btn-primary w-full">Tizimni ochish</a>
+    </div>
+  </div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    const messageEl = document.getElementById('miniAppMessage');
+    const actionsEl = document.getElementById('miniAppActions');
+    const openBtn = document.getElementById('miniAppOpenBtn');
+
+    async function authMiniApp() {
+      const tg = window.Telegram?.WebApp;
+      const initData = tg?.initData || '';
+      if (!initData) {
+        messageEl.textContent = "Siz tizimga ulanmagansiz.";
+        return;
+      }
+
+      try {
+        const response = await fetch('{{ mini_app_auth_url }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({ init_data: initData }),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) {
+          messageEl.textContent = data.message || "Siz tizimga ulanmagansiz.";
+          return;
+        }
+
+        messageEl.textContent = "Akkaunt topildi. Tizimga yo'naltirilmoqda.";
+        openBtn.href = data.redirect_url;
+        actionsEl.style.display = 'block';
+        window.location.href = data.redirect_url;
+      } catch (error) {
+        messageEl.textContent = "Tekshirishda xatolik yuz berdi.";
+      }
+    }
+
+    authMiniApp();
+  </script>
+</body>
+</html>
