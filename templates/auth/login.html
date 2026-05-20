@@ -22,6 +22,7 @@
 
     <form method="post" class="auth-form">
       {% csrf_token %}
+      <input type="hidden" name="login_type" value="employee">
       {% if form.non_field_errors %}
         <div class="error-list">{{ form.non_field_errors }}</div>
       {% endif %}
@@ -33,7 +34,37 @@
 
       <button type="submit" class="btn btn-primary w-full">Kirish</button>
     </form>
+
+    <div style="margin-top:12px;">
+      <button type="button" id="adminLoginToggle" class="btn btn-light w-full">Adminlar uchun kirish</button>
+    </div>
+
+    <div id="adminLoginBox" style="margin-top:12px;{% if not open_admin_box %}display:none;{% endif %}">
+      <form method="post" class="auth-form">
+        {% csrf_token %}
+        <input type="hidden" name="login_type" value="admin">
+        {% if admin_form.non_field_errors %}
+          <div class="error-list">{{ admin_form.non_field_errors }}</div>
+        {% endif %}
+        <label for="{{ admin_form.username.id_for_label }}">Foydalanuvchi nomi</label>
+        {{ admin_form.username }}
+
+        <label for="{{ admin_form.password.id_for_label }}">Parol</label>
+        {{ admin_form.password }}
+
+        <button type="submit" class="btn btn-primary w-full">Admin sifatida kirish</button>
+      </form>
+    </div>
   </div>
   <script src="{% static 'js/phone_format.js' %}"></script>
+  <script>
+    const adminBtn = document.getElementById('adminLoginToggle');
+    const adminBox = document.getElementById('adminLoginBox');
+    if (adminBtn && adminBox) {
+      adminBtn.addEventListener('click', () => {
+        adminBox.style.display = adminBox.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+  </script>
 </body>
 </html>

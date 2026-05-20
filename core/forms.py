@@ -44,16 +44,41 @@ class LoginForm(forms.Form):
         cleaned_data['username'] = username
 
         if username and password:
-            user = None
             emp = Employee.objects.filter(Q(phone_primary=username) | Q(phone_secondary=username)).select_related('user').first()
-            if emp:
-                user = authenticate(username=emp.user.username, password=password)
-            else:
-                user = authenticate(username=username, password=password)
+            user = authenticate(username=emp.user.username, password=password) if emp else None
             if not user:
                 raise forms.ValidationError("Telefon yoki parol noto'g'ri.")
             if not user.is_active:
                 raise forms.ValidationError('Foydalanuvchi faol emas.')
+            cleaned_data['user'] = user
+
+        return cleaned_data
+
+
+class AdminLoginForm(forms.Form):
+    username = forms.CharField(
+        label='Foydalanuvchi nomi',
+        max_length=150,
+        widget=forms.TextInput(attrs={'placeholder': 'Foydalanuvchi nomi'}),
+    )
+    password = forms.CharField(
+        label='Parol',
+        widget=forms.PasswordInput(attrs={'placeholder': 'Parol'}),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        username = (cleaned_data.get('username') or '').strip()
+        password = cleaned_data.get('password')
+
+        if username and password:
+            user = authenticate(username=username, password=password)
+            if not user:
+                raise forms.ValidationError("Foydalanuvchi nomi yoki parol noto'g'ri.")
+            if not user.is_active:
+                raise forms.ValidationError('Foydalanuvchi faol emas.')
+            if not (user.is_staff or user.is_superuser):
+                raise forms.ValidationError("Siz admin sifatida kirish huquqiga ega emassiz.")
             cleaned_data['user'] = user
 
         return cleaned_data
