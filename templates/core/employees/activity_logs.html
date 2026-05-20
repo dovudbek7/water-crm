@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Faollik loglari{% endblock %}
+{% block page_title %}Xodim va admin faollik loglari{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <form method="get" class="search-inline">
+    <select name="employee">
+      <option value="">Barchasi</option>
+      {% for e in employees %}
+      <option value="{{ e.pk }}" {% if selected_employee == e.pk|stringformat:'s' %}selected{% endif %}>{{ e }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-light" type="submit">Filtrlash</button>
+  </form>
+  <div class="table-wrap" style="margin-top:12px;">
+    <table>
+      <thead><tr><th>Sana</th><th>Foydalanuvchi</th><th>Amal turi</th><th>Obyekt</th><th>Xabar</th><th>Ko'rish</th></tr></thead>
+      <tbody>
+      {% for l in logs %}
+        <tr>
+          <td>{{ l.created_at|date:'d.m.Y H:i' }}</td>
+          <td>
+            {% if l.employee %}
+              <a href="{% url 'employee-detail' l.employee.pk %}">{{ l.employee }}</a>
+            {% else %}
+              {{ l.actor_name|default:'Admin' }}
+            {% endif %}
+          </td>
+          <td>{{ l.get_action_type_display }}</td>
+          <td>{{ l.object_label }}</td>
+          <td>{{ l.message }}</td>
+          <td>
+            <button type="button" class="icon-btn sm view-log-btn" data-log-url="{% url 'activity-log-detail-json' l.pk %}">
+              <span class="material-symbols-outlined">visibility</span>
+            </button>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">Loglar yo'q.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div id="logModal" class="custom-modal">
+  <div class="custom-modal-backdrop" id="logModalBackdrop"></div>
+  <div class="custom-modal-dialog">
+    <div class="custom-modal-header">
+      <h3>Log tafsiloti</h3>
+      <button type="button" class="icon-btn" id="logModalClose"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="custom-modal-body">
+      <div class="grid-form">
+        <div><label>Foydalanuvchi</label><input id="logActor" type="text" readonly></div>
+        <div><label>Amal</label><input id="logAction" type="text" readonly></div>
+        <div><label>Obyekt</label><input id="logObject" type="text" readonly></div>
+        <div><label>Sana</label><input id="logDate" type="text" readonly></div>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Qisqa xabar</label>
+        <textarea id="logMessage" rows="2" readonly></textarea>
+      </div>
+      <div class="table-wrap" style="margin-top:12px;">
+        <table>
+          <thead><tr><th>Maydon</th><th>Eski qiymat</th><th>Yangi qiymat</th></tr></thead>
+          <tbody id="logDiffRows"><tr><td colspan="3">Ma'lumot yo'q</td></tr></tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Yaratilgan/O'chirilgan ma'lumotlar</label>
+        <textarea id="logSnapshot" rows="5" readonly></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const logModal = document.getElementById('logModal');
+const logBackdrop = document.getElementById('logModalBackdrop');
+const logClose = document.getElementById('logModalClose');
+const logActor = document.getElementById('logActor');
+const logAction = document.getElementById('logAction');
+const logObject = document.getElementById('logObject');
+const logDate = document.getElementById('logDate');
+const logMessage = document.getElementById('logMessage');
+const logDiffRows = document.getElementById('logDiffRows');
+const logSnapshot = document.getElementById('logSnapshot');
+
+function openLogModal() { logModal?.classList.add('show'); }
+function closeLogModal() { logModal?.classList.remove('show'); }
+
+function renderDetails(details) {
+  const updated = details.updated_fields || {};
+  const created = details.created || {};
+  const deleted = details.deleted || {};
+
+  const keys = Object.keys(updated);
+  if (keys.length) {
+    logDiffRows.innerHTML = keys.map((k) => {
+      const row = updated[k] || {};
+      return `<tr><td>${k}</td><td>${row.old || '-'}</td><td>${row.new || '-'}</td></tr>`;
+    }).join('');
+  } else {
+    logDiffRows.innerHTML = '<tr><td colspan=\"3\">Tahrirlangan maydonlar yo\\'q</td></tr>';
+  }
+
+  const snapshotObj = Object.keys(created).length ? created : (Object.keys(deleted).length ? deleted : {});
+  logSnapshot.value = Object.keys(snapshotObj).length ? JSON.stringify(snapshotObj, null, 2) : 'Ma\\'lumot yo\\'q';
+}
+
+document.querySelectorAll('.view-log-btn').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    try {
+      const url = btn.dataset.logUrl;
+      if (!url) return;
+      const res = await fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+      if (!res.ok) {
+        alert('Log tafsilotini ochib bo‘lmadi.');
+        return;
+      }
+      const data = await res.json();
+      logActor.value = data.actor || '-';
+      logAction.value = data.action || '-';
+      logObject.value = data.object || '-';
+      logDate.value = data.created_at || '-';
+      logMessage.value = data.message || '-';
+      renderDetails(data.details || {});
+      openLogModal();
+    } catch (e) {
+      alert('Log tafsilotida xatolik yuz berdi.');
+    }
+  });
+});
+
+logClose?.addEventListener('click', closeLogModal);
+logBackdrop?.addEventListener('click', closeLogModal);
+</script>
+{% endblock %}

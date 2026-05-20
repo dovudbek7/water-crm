@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load core_extras %}
+
+{% block title %}Xodimlar{% endblock %}
+{% block page_title %}Xodimlar{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head wrap-head">
+    <h3>Xodimlar ro'yxati</h3>
+    <div class="order-actions">
+      <a href="{% url 'employee-list-export-pdf' %}" class="btn btn-light">PDF</a>
+      <a href="{% url 'employee-list-export-excel' %}" class="btn btn-light">Excel</a>
+      <a href="{% url 'employee-create' %}" class="btn btn-primary">Yangi xodim</a>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Rasm</th><th>F.I.Sh</th><th>Lavozim</th><th>Telefon</th><th>Buyurtmalar</th><th>Yetkazishlar</th><th>Ko'rish</th></tr></thead>
+      <tbody>
+      {% for e in employees %}
+        <tr>
+          <td>{% if e.photo %}<img src="{{ e.photo.url }}" data-fullscreen-image="{{ e.photo.url }}" alt="Xodim rasmi" style="width:40px;height:40px;border-radius:50%;object-fit:cover;cursor:zoom-in;">{% else %}<div class="avatar"><span class="material-symbols-outlined">person</span></div>{% endif %}</td>
+          <td>{{ e }}</td>
+          <td>{{ e.get_role_display }}</td>
+          <td><a class="phone-link" href="tel:{{ e.phone_primary|tel_link }}">{{ e.phone_primary }}</a></td>
+          <td>{{ e.total_orders_taken|comma }}</td>
+          <td>{{ e.total_deliveries|comma }}</td>
+          <td><a class="icon-btn sm" href="{% url 'employee-detail' e.pk %}"><span class="material-symbols-outlined">visibility</span></a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7">Xodimlar yo'q.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

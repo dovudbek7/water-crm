@@ -8,6 +8,9 @@ from openpyxl.styles import Alignment, Font, PatternFill
 
 
 CURRENCY_FORMAT = '#,##0 "so\'m"'
+COMPANY_NAME = 'Aqua Blue Zam-Zam'
+COMPANY_PHONE_1 = '+998 95 200 07 06'
+COMPANY_PHONE_2 = '+998 94 073 07 06'
 
 
 def _excel_response(workbook, filename):
@@ -28,6 +31,13 @@ def _style_header(sheet, row=1):
         cell.font = Font(bold=True)
         cell.fill = fill
         cell.alignment = Alignment(horizontal='center', vertical='center')
+
+
+def _add_company_header(sheet):
+    sheet.append(['Kompaniya', COMPANY_NAME])
+    sheet.append(['Telefon 1', COMPANY_PHONE_1])
+    sheet.append(['Telefon 2', COMPANY_PHONE_2])
+    sheet.append([])
 
 
 def _style_currency_column(sheet, col_letter, start_row, end_row):
@@ -72,10 +82,11 @@ def export_orders_excel(orders):
     wb = Workbook()
     ws = wb.active
     ws.title = "Buyurtmalar"
+    _add_company_header(ws)
     ws.append(['Buyurtma ID', "Do'kon", 'Sana', 'Jami summa', "To'langan", 'Qoldiq'])
-    _style_header(ws)
+    _style_header(ws, row=5)
 
-    row_no = 1
+    row_no = 5
     for order in orders:
         row_no += 1
         ws.append(
@@ -96,10 +107,10 @@ def export_orders_excel(orders):
     ws.column_dimensions['E'].width = 18
     ws.column_dimensions['F'].width = 18
 
-    if row_no > 1:
-        _style_currency_column(ws, 'D', 2, row_no)
-        _style_currency_column(ws, 'E', 2, row_no)
-        _style_currency_column(ws, 'F', 2, row_no)
+    if row_no > 5:
+        _style_currency_column(ws, 'D', 6, row_no)
+        _style_currency_column(ws, 'E', 6, row_no)
+        _style_currency_column(ws, 'F', 6, row_no)
 
     return _excel_response(wb, 'buyurtmalar.xlsx')
 
@@ -109,15 +120,16 @@ def export_order_excel(order):
     ws = wb.active
     ws.title = f"Buyurtma_{order.id}"
 
+    _add_company_header(ws)
     ws.append(['Buyurtma ID', order.id])
     ws.append(["Do'kon", order.shop.name])
     ws.append(['Sana', order.order_date.strftime('%d.%m.%Y')])
     ws.append([])
     ws.append(['Mahsulot', 'Soni', 'Narxi', 'Jami'])
-    _style_header(ws, row=5)
+    _style_header(ws, row=9)
 
-    start_items = 6
-    row_no = 5
+    start_items = 10
+    row_no = 9
     for item in order.items.select_related('product'):
         row_no += 1
         ws.append([item.product.name, item.quantity, float(item.price_at_sale), float(item.total_amount)])
@@ -146,6 +158,7 @@ def export_shops_excel(shops):
     wb = Workbook()
     ws = wb.active
     ws.title = "Do'konlar"
+    _add_company_header(ws)
     ws.append([
         "Do'kon nomi",
         'Manzil',
@@ -156,9 +169,9 @@ def export_shops_excel(shops):
         "Jami to'lagan",
         'Balans',
     ])
-    _style_header(ws)
+    _style_header(ws, row=5)
 
-    row_no = 1
+    row_no = 5
     for shop in shops:
         row_no += 1
         ws.append(
@@ -183,10 +196,10 @@ def export_shops_excel(shops):
     ws.column_dimensions['G'].width = 16
     ws.column_dimensions['H'].width = 16
 
-    if row_no > 1:
-        _style_currency_column(ws, 'F', 2, row_no)
-        _style_currency_column(ws, 'G', 2, row_no)
-        _style_currency_column(ws, 'H', 2, row_no)
+    if row_no > 5:
+        _style_currency_column(ws, 'F', 6, row_no)
+        _style_currency_column(ws, 'G', 6, row_no)
+        _style_currency_column(ws, 'H', 6, row_no)
 
     return _excel_response(wb, 'dokonlar.xlsx')
 
@@ -195,15 +208,16 @@ def export_transactions_excel(shop, transactions):
     wb = Workbook()
     ws = wb.active
     ws.title = "Tranzaksiyalar"
+    _add_company_header(ws)
     ws.append(["Do'kon", shop.name])
     ws.append(['Manzil', shop.address or '-'])
     ws.append(['Telefonlar', f"{shop.phone_primary or '-'} / {shop.phone_secondary or '-'}"])
     ws.append(['Izoh', shop.note or '-'])
     ws.append([])
     ws.append(['Sana', 'Turi', 'Miqdor', 'Buyurtma ID', 'Izoh'])
-    _style_header(ws, row=6)
+    _style_header(ws, row=10)
 
-    row_no = 6
+    row_no = 10
     for row in transactions:
         row_no += 1
         ws.append(
@@ -222,8 +236,8 @@ def export_transactions_excel(shop, transactions):
     ws.column_dimensions['D'].width = 14
     ws.column_dimensions['E'].width = 40
 
-    if row_no > 6:
-        _style_currency_column(ws, 'C', 7, row_no)
+    if row_no > 10:
+        _style_currency_column(ws, 'C', 11, row_no)
 
     return _excel_response(wb, f"dokon_{shop.id}_tranzaksiyalar.xlsx")
 
@@ -233,13 +247,14 @@ def export_analytics_excel(payload):
     ws = wb.active
     ws.title = 'Analitika'
 
+    _add_company_header(ws)
     ws.append(['Hisobot oyi', payload['selected_month']])
     ws.append(['Bu oy savdo summasi', payload['month_sales']])
     ws.append([])
     ws.append(['Mahsulot', 'Sotilgan dona', 'Tushgan pul'])
-    _style_header(ws, row=4)
+    _style_header(ws, row=8)
 
-    row_no = 4
+    row_no = 8
     for row in payload['product_rows']:
         row_no += 1
         ws.append([row['name'], row['quantity'], float(row['revenue'])])
@@ -259,8 +274,8 @@ def export_analytics_excel(payload):
     ws2.column_dimensions['A'].width = 12
     ws2.column_dimensions['B'].width = 16
 
-    if row_no > 4:
-        _style_currency_column(ws, 'C', 5, row_no)
+    if row_no > 8:
+        _style_currency_column(ws, 'C', 9, row_no)
     if row2 > 1:
         _style_currency_column(ws2, 'B', 2, row2)
 
@@ -307,10 +322,11 @@ def _build_professional_pdf(title, subtitle, headers, rows, numeric_cols, summar
     commands.append('0 g')
     _pdf_text(commands, 'Suv Savdo Tizimi', left + 8, top - 2, size=10, bold=True)
     _pdf_text(commands, title, left, top - 30, size=15, bold=True)
-    _pdf_text(commands, subtitle, left, top - 46, size=10)
-    _pdf_text(commands, f"Sana: {datetime.now().strftime('%d.%m.%Y %H:%M')}", left + 390, top - 46, size=8)
+    _pdf_text(commands, f"{COMPANY_NAME} | {COMPANY_PHONE_1} | {COMPANY_PHONE_2}", left, top - 46, size=8)
+    _pdf_text(commands, subtitle, left, top - 60, size=10)
+    _pdf_text(commands, f"Sana: {datetime.now().strftime('%d.%m.%Y %H:%M')}", left + 390, top - 60, size=8)
 
-    y = top - 72
+    y = top - 86
 
     commands.append('0.93 0.95 0.98 rg')
     _pdf_rect(commands, left, y - 20, content_w, 20, fill=True)
@@ -399,7 +415,7 @@ def export_orders_pdf(orders):
     data = _build_professional_pdf(
         title='Buyurtmalar hisoboti',
         subtitle='Umumiy buyurtmalar ro\'yxati',
-        headers=['Order ID', "Do'kon", 'Sana', 'Total', 'Paid', 'Balance'],
+        headers=['Buyurtma ID', "Do'kon", 'Sana', 'Jami', "To'langan", 'Qoldiq'],
         rows=rows,
         numeric_cols={3, 4, 5},
         summary_lines=[
@@ -417,7 +433,7 @@ def export_order_pdf(order):
         rows.append([item.product.name, f'{item.quantity:,}', _currency(item.price_at_sale), _currency(item.total_amount)])
 
     data = _build_professional_pdf(
-        title=f'Buyurtma #{order.id} invoice',
+        title=f'Buyurtma #{order.id} hisoboti',
         subtitle=f"Do'kon: {order.shop.name} | Sana: {order.order_date.strftime('%d.%m.%Y')}",
         headers=['Mahsulot', 'Soni', 'Narxi', 'Jami'],
         rows=rows,
@@ -450,7 +466,7 @@ def export_shops_pdf(shops):
     data = _build_professional_pdf(
         title="Do'konlar hisoboti",
         subtitle="Do'konlar bo'yicha umumiy ko'rsatkichlar",
-        headers=["Do'kon", 'Manzil', 'Tel-1', 'Tel-2', 'Izoh', 'Purchased', 'Paid', 'Balance'],
+        headers=["Do'kon", 'Manzil', 'Tel-1', 'Tel-2', 'Izoh', 'Jami olgan', "Jami to'lagan", 'Balans'],
         rows=rows,
         numeric_cols={5, 6, 7},
         summary_lines=[f"Jami do'konlar: {len(rows):,}"],
@@ -493,7 +509,7 @@ def export_transactions_pdf(shop, transactions):
     data = _build_professional_pdf(
         title=f"Do'kon tarixi: {shop.name}",
         subtitle="Buyurtma, to'lov va depozit tranzaksiyalari",
-        headers=['Sana', 'Turi', 'Amount', 'Order ID', 'Izoh'],
+        headers=['Sana', 'Turi', 'Miqdor', 'Buyurtma ID', 'Izoh'],
         rows=rows,
         numeric_cols={2},
         summary_lines=[
@@ -505,3 +521,93 @@ def export_transactions_pdf(shop, transactions):
         ],
     )
     return pdf_response(f"dokon_{shop.id}_tarix.pdf", data)
+
+
+def export_employees_excel(employees):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Xodimlar'
+    _add_company_header(ws)
+    ws.append(['F.I.Sh', 'Lavozim', 'Telefon 1', 'Telefon 2', 'Buyurtmalar', 'Yetkazishlar'])
+    _style_header(ws, row=5)
+
+    row_no = 5
+    for emp in employees:
+        row_no += 1
+        ws.append(
+            [
+                str(emp),
+                emp.get_role_display(),
+                emp.phone_primary,
+                emp.phone_secondary or '-',
+                emp.total_orders_taken,
+                emp.total_deliveries,
+            ]
+        )
+
+    ws.column_dimensions['A'].width = 30
+    ws.column_dimensions['B'].width = 18
+    ws.column_dimensions['C'].width = 16
+    ws.column_dimensions['D'].width = 16
+    ws.column_dimensions['E'].width = 14
+    ws.column_dimensions['F'].width = 14
+    return _excel_response(wb, 'xodimlar.xlsx')
+
+
+def export_employee_detail_excel(employee):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Xodim'
+    _add_company_header(ws)
+    ws.append(['Xodim', str(employee)])
+    ws.append(['Lavozim', employee.get_role_display()])
+    ws.append(['Telefon 1', employee.phone_primary])
+    ws.append(['Telefon 2', employee.phone_secondary or '-'])
+    ws.append(['Buyurtmalar', employee.total_orders_taken])
+    ws.append(['Yetkazishlar', employee.total_deliveries])
+    ws.column_dimensions['A'].width = 20
+    ws.column_dimensions['B'].width = 35
+    return _excel_response(wb, f'xodim_{employee.id}.xlsx')
+
+
+def export_employees_pdf(employees):
+    rows = []
+    for emp in employees:
+        rows.append(
+            [
+                str(emp),
+                emp.get_role_display(),
+                emp.phone_primary,
+                f'{emp.total_orders_taken:,}',
+                f'{emp.total_deliveries:,}',
+            ]
+        )
+
+    data = _build_professional_pdf(
+        title='Xodimlar hisoboti',
+        subtitle='Xodimlar ro‘yxati va ko‘rsatkichlari',
+        headers=['F.I.Sh', 'Lavozim', 'Telefon', 'Buyurtmalar', 'Yetkazishlar'],
+        rows=rows,
+        numeric_cols={3, 4},
+        summary_lines=[f'Jami xodimlar: {len(rows):,}'],
+    )
+    return pdf_response('xodimlar.pdf', data)
+
+
+def export_employee_detail_pdf(employee):
+    rows = [
+        ['Lavozim', employee.get_role_display()],
+        ['Telefon 1', employee.phone_primary],
+        ['Telefon 2', employee.phone_secondary or '-'],
+        ['Buyurtmalar', f'{employee.total_orders_taken:,}'],
+        ['Yetkazishlar', f'{employee.total_deliveries:,}'],
+    ]
+    data = _build_professional_pdf(
+        title=f'Xodim: {employee}',
+        subtitle='Xodim batafsil ma’lumotlari',
+        headers=['Maydon', 'Qiymat'],
+        rows=rows,
+        numeric_cols=set(),
+        summary_lines=[f'Xodim ID: {employee.id}'],
+    )
+    return pdf_response(f'xodim_{employee.id}.pdf', data)

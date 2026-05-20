@@ -28,7 +28,7 @@
     <h3 class="balance-down">↓ -{{ total_debt_amount|som }}</h3>
   </article>
   <article class="stat-card">
-    <p>Jami deposit summasi</p>
+    <p>Jami depozit summasi</p>
     <h3 class="balance-up">↑ +{{ total_deposit_amount|som }}</h3>
   </article>
 </section>
@@ -42,6 +42,29 @@
     <h3>Eng ko'p sotilgan mahsulotlar</h3>
     <canvas id="topProductsChart"></canvas>
   </div>
+</section>
+
+<section class="stats-grid">
+  <article class="stat-card">
+    <p>Eng ko'p buyurtma olgan ishchi</p>
+    <h3>
+      {% if top_order_taker %}
+        {{ top_order_taker }} ({{ top_order_taker.c|comma }})
+      {% else %}
+        -
+      {% endif %}
+    </h3>
+  </article>
+  <article class="stat-card">
+    <p>Eng ko'p yetkazib bergan kuryer</p>
+    <h3>
+      {% if top_courier %}
+        {{ top_courier }} ({{ top_courier.c|comma }})
+      {% else %}
+        -
+      {% endif %}
+    </h3>
+  </article>
 </section>
 
 <section class="panel">

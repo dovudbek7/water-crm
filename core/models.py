@@ -39,6 +39,12 @@ class Shop(TimeStampedModel):
     phone_primary = models.CharField(max_length=25, blank=True, verbose_name='Telefon 1')
     phone_secondary = models.CharField(max_length=25, blank=True, verbose_name='Telefon 2')
     note = models.TextField(blank=True, verbose_name='Izoh')
+    photo = models.FileField(upload_to='shops/photos/', blank=True, null=True, verbose_name='Do‘kon rasmi')
+    map_link = models.URLField(blank=True, verbose_name='Lokatsiya linki (eski)')
+    google_map_link = models.URLField(blank=True, verbose_name='Google xarita havolasi')
+    yandex_map_link = models.URLField(blank=True, verbose_name='Yandex xarita havolasi')
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     class Meta:
         ordering = ('name',)
@@ -65,8 +71,34 @@ class Shop(TimeStampedModel):
 
 
 class Order(TimeStampedModel):
+    ORDER_TYPE_PICKUP = 'pickup'
+    ORDER_TYPE_DELIVERY = 'delivery'
+    ORDER_TYPE_CHOICES = (
+        (ORDER_TYPE_PICKUP, 'Zavoddan olib ketish'),
+        (ORDER_TYPE_DELIVERY, 'Yetkazib berish'),
+    )
+
+    DELIVERY_NEW = 'new'
+    DELIVERY_DONE = 'delivered'
+    DELIVERY_STATUS_CHOICES = (
+        (DELIVERY_NEW, 'Yangi'),
+        (DELIVERY_DONE, 'Yetkazildi'),
+    )
+
     shop = models.ForeignKey(Shop, related_name='orders', on_delete=models.PROTECT, verbose_name="Do'kon")
     order_date = models.DateField(default=timezone.localdate, verbose_name='Sana')
+    order_type = models.CharField(
+        max_length=20,
+        choices=ORDER_TYPE_CHOICES,
+        default=ORDER_TYPE_PICKUP,
+        verbose_name='Buyurtma turi',
+    )
+    delivery_status = models.CharField(
+        max_length=20,
+        choices=DELIVERY_STATUS_CHOICES,
+        default=DELIVERY_NEW,
+        verbose_name='Yetkazish holati',
+    )
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0'))
     paid_amount = models.DecimalField(
         max_digits=12,
@@ -76,12 +108,22 @@ class Order(TimeStampedModel):
         verbose_name="To'langan summa",
     )
     note = models.TextField(blank=True, verbose_name='Izoh')
+    delivery_received_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0'))
+    delivery_note = models.TextField(blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name='created_orders',
+    )
+    courier = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='delivered_orders',
     )
 
     class Meta:
@@ -146,3 +188,85 @@ class ShopDeposit(TimeStampedModel):
 
     def __str__(self):
         return f"{self.shop.name} +{self.amount}"
+
+
+class Employee(TimeStampedModel):
+    ROLE_COURIER = 'courier'
+    ROLE_WORKER = 'worker'
+    ROLE_FILLER = 'water_filler'
+    ROLE_ORDER_TAKER = 'order_taker'
+
+    ROLE_CHOICES = (
+        (ROLE_COURIER, 'Kuryer'),
+        (ROLE_WORKER, 'Ishchi'),
+        (ROLE_FILLER, "Suv to'ldiruvchi"),
+        (ROLE_ORDER_TAKER, 'Buyurtma qabul qiluvchi'),
+    )
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='employee_profile', on_delete=models.CASCADE)
+    photo = models.FileField(upload_to='employees/photos/', blank=True, null=True)
+    phone_primary = models.CharField(max_length=25)
+    phone_secondary = models.CharField(max_length=25, blank=True)
+    role = models.CharField(max_length=30, choices=ROLE_CHOICES)
+
+    class Meta:
+        ordering = ('user__first_name', 'user__last_name', 'user__username')
+
+    def __str__(self):
+        name = f'{self.user.first_name} {self.user.last_name}'.strip()
+        return name or self.user.username
+
+    @property
+    def total_orders_taken(self):
+        return self.user.created_orders.count()
+
+    @property
+    def total_deliveries(self):
+        return self.user.delivered_orders.filter(delivery_status=Order.DELIVERY_DONE).count()
+
+
+class ActionLog(TimeStampedModel):
+    ACTION_CREATED = 'created'
+    ACTION_UPDATED = 'updated'
+    ACTION_DELETED = 'deleted'
+    ACTION_SHOP_CREATED = 'shop_created'
+    ACTION_ORDER_CREATED = 'order_created'
+    ACTION_ORDER_DELIVERED = 'order_delivered'
+
+    ACTION_CHOICES = (
+        (ACTION_CREATED, 'Yaratdi'),
+        (ACTION_UPDATED, 'Tahrirladi'),
+        (ACTION_DELETED, "O'chirdi"),
+        (ACTION_SHOP_CREATED, "Do'kon qo'shildi"),
+        (ACTION_ORDER_CREATED, "Buyurtma yaratildi"),
+        (ACTION_ORDER_DELIVERED, "Buyurtma yetkazildi"),
+    )
+
+    employee = models.ForeignKey(Employee, related_name='logs', on_delete=models.SET_NULL, null=True, blank=True)
+    actor_name = models.CharField(max_length=150, blank=True)
+    action_type = models.CharField(max_length=30, choices=ACTION_CHOICES)
+    object_label = models.CharField(max_length=255)
+    message = models.CharField(max_length=255)
+    target_model = models.CharField(max_length=120, blank=True)
+    target_id = models.CharField(max_length=64, blank=True)
+    details = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ('-created_at',)
+
+    def __str__(self):
+        return self.message
+
+
+class UserProfile(TimeStampedModel):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='user_profile', on_delete=models.CASCADE)
+    photo = models.FileField(upload_to='users/photos/', blank=True, null=True, verbose_name='Profil rasmi')
+    phone_primary = models.CharField(max_length=25, blank=True, verbose_name='Telefon 1')
+    phone_secondary = models.CharField(max_length=25, blank=True, verbose_name='Telefon 2')
+
+    class Meta:
+        verbose_name = 'Foydalanuvchi profili'
+        verbose_name_plural = 'Foydalanuvchi profillari'
+
+    def __str__(self):
+        return self.user.get_full_name() or self.user.username

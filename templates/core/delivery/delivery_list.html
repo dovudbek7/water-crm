@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load core_extras %}
+
+{% block title %}Yetkazish{% endblock %}
+{% block page_title %}Yetkazish buyurtmalari{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head wrap-head">
+    <form method="get" class="search-inline">
+      <input type="text" name="q" placeholder="Do'kon, telefon yoki ID qidirish..." value="{{ search }}">
+      <select name="sort">
+        <option value="-id" {% if sort == '-id' %}selected{% endif %}>ID (yangi)</option>
+        <option value="id" {% if sort == 'id' %}selected{% endif %}>ID (eski)</option>
+        <option value="-date" {% if sort == '-date' %}selected{% endif %}>Sana (yangi)</option>
+        <option value="date" {% if sort == 'date' %}selected{% endif %}>Sana (eski)</option>
+        <option value="-paid" {% if sort == '-paid' %}selected{% endif %}>To'lov (ko'p)</option>
+        <option value="paid" {% if sort == 'paid' %}selected{% endif %}>To'lov (kam)</option>
+        <option value="-remaining" {% if sort == '-remaining' %}selected{% endif %}>Qoldiq (ko'p)</option>
+        <option value="remaining" {% if sort == 'remaining' %}selected{% endif %}>Qoldiq (kam)</option>
+      </select>
+      <button class="btn btn-light" type="submit">Filtrlash</button>
+    </form>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Buyurtma ID</th>
+          <th>Do'kon</th>
+          <th>Kuryer</th>
+          <th>Holat</th>
+          <th>Amal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td>#{{ order.id }}</td>
+          <td>{{ order.shop.name }}</td>
+          <td>{% if order.courier %}{{ order.courier.get_full_name|default:order.courier.username }}{% else %}-{% endif %}</td>
+          <td>
+            {% if order.delivery_status == 'delivered' %}
+              <span class="badge badge-status-done">Yetkazildi</span>
+            {% else %}
+              <span class="badge badge-status-new">Yangi</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="icon-action-group">
+              <a class="icon-btn sm" href="{% url 'delivery-detail' order.pk %}"><span class="material-symbols-outlined">visibility</span></a>
+              {% if order.shop.google_map_link %}
+                <a class="icon-btn sm" href="{{ order.shop.google_map_link }}" target="_blank" title="Google xarita">
+                  <span class="material-symbols-outlined">map</span>
+                </a>
+              {% endif %}
+              {% if order.shop.yandex_map_link %}
+                <a class="icon-btn sm" href="{{ order.shop.yandex_map_link }}" target="_blank" title="Yandex xarita">
+                  <span class="material-symbols-outlined">location_on</span>
+                </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">Yetkazish buyurtmalari topilmadi.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

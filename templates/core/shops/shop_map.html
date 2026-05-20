@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Do'konlar xaritasi{% endblock %}
+{% block page_title %}Do'konlar xaritasi{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head wrap-head">
+    <h3>Saqlangan lokatsiyali do'konlar</h3>
+    <a class="btn btn-light" href="{% url 'shop-list' %}">Ro'yxatga qaytish</a>
+  </div>
+  <div id="shopsMap" style="height: 68vh; border-radius: 12px; border:1px solid var(--border);"></div>
+</section>
+
+{{ shops_data|json_script:"shops-map-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const mapEl = document.getElementById('shopsMap');
+const dataEl = document.getElementById('shops-map-data');
+if (mapEl && dataEl && typeof L !== 'undefined') {
+  const raw = JSON.parse(dataEl.textContent || '[]');
+  const shops = raw.map((s) => ({
+    id: s.id,
+    name: s.name,
+    lat: Number(s.latitude),
+    lng: Number(s.longitude),
+  })).filter((s) => !Number.isNaN(s.lat) && !Number.isNaN(s.lng));
+
+  const map = L.map(mapEl).setView([41.2995, 69.2401], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map);
+
+  const bounds = [];
+  shops.forEach((shop) => {
+    const g = `https://www.google.com/maps/dir/?api=1&destination=${shop.lat},${shop.lng}&travelmode=driving`;
+    const y = `https://yandex.com/maps/?rtext=~${shop.lat},${shop.lng}&rtt=auto&ll=${shop.lng}%2C${shop.lat}&z=16&pt=${shop.lng},${shop.lat},pm2rdm`;
+    L.marker([shop.lat, shop.lng]).addTo(map).bindPopup(
+      `<div><strong>${shop.name}</strong><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+        <a class="btn btn-light btn-sm" target="_blank" href="${g}">Google Maps bilan ochish</a>
+        <a class="btn btn-light btn-sm" target="_blank" href="${y}">Yandex Maps bilan ochish</a>
+      </div></div>`
+    );
+    bounds.push([shop.lat, shop.lng]);
+  });
+
+  if (bounds.length) {
+    map.fitBounds(bounds, { padding: [30, 30] });
+  }
+}
+</script>
+{% endblock %}

@@ -7,7 +7,10 @@
 {% block content %}
 <section class="panel">
   <div class="panel-head wrap-head">
-    <h3>Do'konlar ro'yxati</h3>
+    <form method="get" class="search-inline">
+      <input type="text" name="q" placeholder="Do'kon yoki telefon qidirish..." value="{{ search }}">
+      <button type="submit" class="btn btn-light">Qidirish</button>
+    </form>
     <div class="order-actions">
       <a href="{% url 'shop-list-export-pdf' %}" class="btn btn-light"><span class="material-symbols-outlined">picture_as_pdf</span>PDF yuklash</a>
       <a href="{% url 'shop-list-export-excel' %}" class="btn btn-light"><span class="material-symbols-outlined">table_view</span>Excel yuklash</a>
@@ -37,7 +40,9 @@
               <div class="icon-action-group">
                 <a class="icon-btn sm" href="{% url 'shop-detail' shop.pk %}" title="Ko'rish"><span class="material-symbols-outlined">visibility</span></a>
                 <a class="icon-btn sm" href="{% url 'shop-update' shop.pk %}" title="Tahrirlash"><span class="material-symbols-outlined">edit</span></a>
+                {% if request.user.is_superuser %}
                 <a class="icon-btn sm danger" href="{% url 'shop-delete' shop.pk %}" title="O'chirish"><span class="material-symbols-outlined">delete</span></a>
+                {% endif %}
               </div>
             </td>
           </tr>

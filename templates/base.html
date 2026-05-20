@@ -6,6 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Suv Savdo Tizimi{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,18 +25,25 @@
         </div>
       </div>
       <nav class="menu">
+        {% if request.user.is_superuser %}
         <a href="{% url 'dashboard' %}" class="menu-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><span class="material-symbols-outlined">dashboard</span>Asosiy panel</a>
         <a href="{% url 'product-list' %}" class="menu-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">inventory_2</span>Mahsulotlar</a>
+        {% endif %}
         <a href="{% url 'shop-list' %}" class="menu-link {% if 'shop' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">storefront</span>Do'konlar</a>
         <a href="{% url 'order-list' %}" class="menu-link {% if 'order' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">shopping_cart</span>Buyurtmalar</a>
+        <a href="{% url 'delivery-list' %}" class="menu-link {% if 'delivery' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">local_shipping</span>Yetkazish</a>
+        {% if request.user.is_superuser %}
         <a href="{% url 'analytics' %}" class="menu-link {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">bar_chart</span>Analitika</a>
+        <a href="{% url 'employee-list' %}" class="menu-link {% if 'employee' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">groups</span>Xodimlar</a>
+        <a href="{% url 'activity-log-list' %}" class="menu-link {% if 'activity-log' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">history</span>Faollik loglari</a>
+        {% endif %}
       </nav>
       <div class="sidebar-footer">
         <div class="user-block">
           <div class="avatar"><span class="material-symbols-outlined">person</span></div>
           <div>
             <strong>{{ request.user.username }}</strong>
-            <p>{% if request.user.is_superuser %}Super Admin{% else %}Admin{% endif %}</p>
+            <p>{% if request.user.is_superuser %}Bosh admin{% else %}Xodim{% endif %}</p>
           </div>
         </div>
       </div>
@@ -48,6 +56,9 @@
         <button id="menuBtn" class="icon-btn" type="button"><span class="material-symbols-outlined">menu</span></button>
         <h2>{% block page_title %}Asosiy panel{% endblock %}</h2>
         <div class="topbar-actions">
+          <a class="icon-btn" href="{% url 'profile' %}" title="Profil">
+            <span class="material-symbols-outlined">account_circle</span>
+          </a>
           <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
             <button class="icon-btn" type="submit"><span class="material-symbols-outlined">logout</span></button>
@@ -66,7 +77,16 @@
     </div>
   </div>
 
+  <div id="imageViewerModal" class="image-viewer-modal">
+    <button type="button" class="icon-btn image-viewer-close" id="imageViewerClose" aria-label="Yopish">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <img id="imageViewerImage" src="" alt="Rasm">
+  </div>
+
   <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/phone_format.js' %}"></script>
+  <script src="{% static 'js/image_viewer.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -3,10 +3,15 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-change-me'
-DEBUG = False
-ALLOWED_HOSTS = ["https://watercrm.pythonanywhere.com"]
+DEBUG = True
+# ALLOWED_HOSTS = ["https://watercrm.pythonanywhere.com", 
+#     "localhost",
+#     "https://b55e-2a05-45c2-108f-ca00-d49a-bbe2-86f2-cc6e.ngrok-free.app"
+# ]
+ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = [
-    "https://watercrm.pythonanywhere.com"
+    "https://watercrm.pythonanywhere.com",
+    "https://b55e-2a05-45c2-108f-ca00-d49a-bbe2-86f2-cc6e.ngrok-free.app"
 ]
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -70,6 +75,8 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

@@ -7,7 +7,7 @@
 {% block content %}
 <section class="panel form-panel">
   <h3>{% if object %}Do'konni tahrirlash{% else %}Yangi do'kon{% endif %}</h3>
-  <form method="post" class="grid-form">
+  <form method="post" enctype="multipart/form-data" class="grid-form">
     {% csrf_token %}
     <div>
       <label for="id_name">Do'kon nomi</label>
@@ -29,6 +29,18 @@
     <div>
       <label for="id_note">Izoh</label>
       {{ form.note }}
+    </div>
+    <div>
+      <label for="id_photo">Do'kon rasmi</label>
+      {{ form.photo }}
+    </div>
+    <div>
+      <label for="id_google_map_link">Google xarita havolasi</label>
+      {{ form.google_map_link }}
+    </div>
+    <div>
+      <label for="id_yandex_map_link">Yandex xarita havolasi</label>
+      {{ form.yandex_map_link }}
     </div>
     <div class="form-actions">
       <a href="{% url 'shop-list' %}" class="btn btn-light">Bekor qilish</a>

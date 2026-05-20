@@ -14,7 +14,7 @@ function formatUzPhoneInput(input) {
   input.value = out;
 }
 
-document.querySelectorAll('#id_phone_primary, #id_phone_secondary').forEach((input) => {
+document.querySelectorAll('#id_phone_primary, #id_phone_secondary, #id_username, .phone-input').forEach((input) => {
   input.addEventListener('input', () => formatUzPhoneInput(input));
   if (input.value) formatUzPhoneInput(input);
 });
