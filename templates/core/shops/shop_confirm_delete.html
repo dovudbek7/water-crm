@@ -7,10 +7,17 @@
 <section class="panel form-panel">
   <h3>Дўконни ўчириш</h3>
   <p>"{{ object.name }}" дўконини ўчирмоқчимисиз?</p>
+  {% if order_count %}
+  <div class="alert alert-warning" style="margin-bottom:1rem;">
+    Диqqat: ушбу дўконга боғлиқ <strong>{{ order_count }} та буюртма</strong> мавжуд. Дўконни ўчириш мумкин эмас.
+  </div>
+  {% endif %}
   <form method="post" class="form-actions">
     {% csrf_token %}
     <a href="{% url 'shop-list' %}" class="btn btn-light">Йўқ</a>
+    {% if not order_count %}
     <button type="submit" class="btn btn-danger">Ҳа, ўчириш</button>
+    {% endif %}
   </form>
 </section>
 {% endblock %}

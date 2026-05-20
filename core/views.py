@@ -510,12 +510,27 @@ class ShopDeleteView(SuperAdminRequiredMixin, DeleteView):
     template_name = 'core/shops/shop_confirm_delete.html'
     success_url = reverse_lazy('shop-list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['order_count'] = self.get_object().orders.count()
+        return context
+
     def form_valid(self, form):
+        from django.db.models import ProtectedError
         obj = self.get_object()
         snapshot = model_to_dict(obj, fields=['name', 'address', 'phone_primary', 'phone_secondary', 'note', 'latitude', 'longitude'])
-        _log_delete(self.request.user, 'Shop', str(obj), snapshot)
-        messages.success(self.request, "Дўкон ўчирилди.")
-        return super().form_valid(form)
+        try:
+            _log_delete(self.request.user, 'Shop', str(obj), snapshot)
+            response = super().form_valid(form)
+            messages.success(self.request, "Дўкон ўчирилди.")
+            return response
+        except ProtectedError:
+            order_count = obj.orders.count()
+            messages.error(
+                self.request,
+                f"«{obj.name}» дўконини ўчириб бўлмайди — унга боғлиқ {order_count} та буюртма мавжуд."
+            )
+            return redirect('shop-detail', pk=obj.pk)
 
 
 class ShopDetailView(AuthRequiredMixin, TemplateView):
