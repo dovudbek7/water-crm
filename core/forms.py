@@ -100,9 +100,13 @@ class ShopForm(forms.ModelForm):
             'phone_secondary',
             'note',
             'photo',
-            'google_map_link',
-            'yandex_map_link',
+            'latitude',
+            'longitude',
         )
+        widgets = {
+            'latitude': forms.HiddenInput(),
+            'longitude': forms.HiddenInput(),
+        }
 
     def clean_phone_primary(self):
         return normalize_uz_phone(self.cleaned_data.get('phone_primary'))
@@ -283,6 +287,7 @@ class UserProfileForm(forms.ModelForm):
 
     def clean_phone_secondary(self):
         return normalize_uz_phone(self.cleaned_data.get('phone_secondary'))
+
 
     def clean(self):
         cleaned = super().clean()

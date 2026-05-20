@@ -80,9 +80,11 @@ class Order(TimeStampedModel):
 
     DELIVERY_NEW = 'new'
     DELIVERY_DONE = 'delivered'
+    DELIVERY_CLOSED = 'closed'
     DELIVERY_STATUS_CHOICES = (
         (DELIVERY_NEW, 'Yangi'),
         (DELIVERY_DONE, 'Yetkazildi'),
+        (DELIVERY_CLOSED, 'Yopiq'),
     )
 
     shop = models.ForeignKey(Shop, related_name='orders', on_delete=models.PROTECT, verbose_name="Do'kon")
@@ -263,6 +265,11 @@ class UserProfile(TimeStampedModel):
     photo = models.FileField(upload_to='users/photos/', blank=True, null=True, verbose_name='Profil rasmi')
     phone_primary = models.CharField(max_length=25, blank=True, verbose_name='Telefon 1')
     phone_secondary = models.CharField(max_length=25, blank=True, verbose_name='Telefon 2')
+    telegram_phone = models.CharField(max_length=25, blank=True, verbose_name='Telegram telefoni')
+    telegram_link_token = models.CharField(max_length=80, blank=True, verbose_name='Telegram token')
+    telegram_chat_id = models.CharField(max_length=64, blank=True, verbose_name='Telegram chat ID')
+    telegram_username = models.CharField(max_length=150, blank=True, verbose_name='Telegram username')
+    telegram_connected_at = models.DateTimeField(null=True, blank=True, verbose_name='Telegram ulangan vaqt')
 
     class Meta:
         verbose_name = 'Foydalanuvchi profili'
@@ -270,3 +277,7 @@ class UserProfile(TimeStampedModel):
 
     def __str__(self):
         return self.user.get_full_name() or self.user.username
+
+    @property
+    def telegram_connected(self):
+        return bool(self.telegram_chat_id)

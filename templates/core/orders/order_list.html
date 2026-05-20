@@ -47,11 +47,22 @@
         {% for order in page_obj %}
           <tr>
             <td>#{{ order.id }}</td>
-            <td>{{ order.shop.name }}</td>
+            <td>
+              <div class="entity-cell">
+                {% if order.shop.photo %}
+                  <img src="{{ order.shop.photo.url }}" alt="{{ order.shop.name }}" class="avatar-thumb">
+                {% else %}
+                  <div class="avatar avatar-thumb placeholder-avatar"><span class="material-symbols-outlined">storefront</span></div>
+                {% endif %}
+                <span>{{ order.shop.name }}</span>
+              </div>
+            </td>
             <td>{{ order.order_date|date:'d.m.Y' }}</td>
             <td>
               {% if order.delivery_status == 'delivered' %}
                 <span class="badge badge-status-done">Yetkazildi</span>
+              {% elif order.delivery_status == 'closed' %}
+                <span class="badge badge-status-closed">Yopiq</span>
               {% else %}
                 <span class="badge badge-status-new">Yangi</span>
               {% endif %}
@@ -71,15 +82,16 @@
                 <a class="icon-btn sm" href="{% url 'order-update' order.pk %}" title="Tahrirlash">
                   <span class="material-symbols-outlined">edit</span>
                 </a>
-                {% if order.shop.google_map_link %}
-                <a class="icon-btn sm" href="{{ order.shop.google_map_link }}" target="_blank" title="Google xarita">
-                  <span class="material-symbols-outlined">map</span>
-                </a>
-                {% endif %}
-                {% if order.shop.yandex_map_link %}
-                <a class="icon-btn sm" href="{{ order.shop.yandex_map_link }}" target="_blank" title="Yandex xarita">
-                  <span class="material-symbols-outlined">location_on</span>
-                </a>
+                {% if order.shop.latitude and order.shop.longitude %}
+                <button type="button" class="icon-btn sm js-location-picker" data-google-url="https://www.google.com/maps/dir/?api=1&destination={{ order.shop.latitude }},{{ order.shop.longitude }}&travelmode=driving&dir_action=navigate" data-yandex-url="https://yandex.com/maps/?rtext=~{{ order.shop.latitude }},{{ order.shop.longitude }}&rtt=auto&ll={{ order.shop.longitude }}%2C{{ order.shop.latitude }}&z=16&pt={{ order.shop.longitude }},{{ order.shop.latitude }},pm2rdm" title="Lokatsiya">
+                  <span class="material-symbols-outlined">near_me</span>
+                </button>
+                {% elif order.shop.google_map_link or order.shop.yandex_map_link %}
+                <button type="button" class="icon-btn sm js-location-picker" data-google-url="{{ order.shop.google_map_link }}" data-yandex-url="{{ order.shop.yandex_map_link }}" title="Lokatsiya">
+                  <span class="material-symbols-outlined">near_me</span>
+                </button>
+                {% else %}
+                <span class="muted-note">Lokatsiya yo'q</span>
                 {% endif %}
                 {% if request.user.is_superuser %}
                 <a class="icon-btn sm danger" href="{% url 'order-delete' order.pk %}" title="O'chirish">
@@ -149,8 +161,7 @@
       <div class="order-actions" style="margin-top:12px;">
         <a id="modalExportPdf" href="#" class="btn btn-light"><span class="material-symbols-outlined">picture_as_pdf</span>PDF yuklash</a>
         <a id="modalExportExcel" href="#" class="btn btn-light"><span class="material-symbols-outlined">table_view</span>Excel yuklash</a>
-        <a id="modalMapGoogle" href="#" class="btn btn-light" target="_blank" style="display:none;">Google xaritada ochish</a>
-        <a id="modalMapYandex" href="#" class="btn btn-light" target="_blank" style="display:none;">Yandex xaritada ochish</a>
+        <button id="modalLocationBtn" type="button" class="btn btn-light" style="display:none;">Lokatsiyani ochish</button>
         <span id="modalNoLocation" class="muted-note" style="display:none;">Lokatsiya mavjud emas</span>
       </div>
     </div>

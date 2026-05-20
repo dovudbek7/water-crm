@@ -59,9 +59,9 @@
     <div>
       <label>Xarita ochish</label>
       <div class="order-actions">
-        {% if google_maps_url %}<a class="btn btn-light" href="{{ google_maps_url }}" target="_blank">Google xaritada ochish</a>{% endif %}
-        {% if yandex_maps_url %}<a class="btn btn-light" href="{{ yandex_maps_url }}" target="_blank">Yandex xaritada ochish</a>{% endif %}
-        {% if not google_maps_url and not yandex_maps_url %}
+        {% if google_maps_url or yandex_maps_url %}
+          <button type="button" class="btn btn-light js-location-picker" data-google-url="{{ google_maps_url }}" data-yandex-url="{{ yandex_maps_url }}">Lokatsiyani ochish</button>
+        {% else %}
           <span class="muted-note">Lokatsiya mavjud emas</span>
         {% endif %}
       </div>

@@ -43,6 +43,8 @@
           <td>
             {% if order.delivery_status == 'delivered' %}
               <span class="badge badge-status-done">Yetkazildi</span>
+            {% elif order.delivery_status == 'closed' %}
+              <span class="badge badge-status-closed">Yopiq</span>
             {% else %}
               <span class="badge badge-status-new">Yangi</span>
             {% endif %}
@@ -50,15 +52,14 @@
           <td>
             <div class="icon-action-group">
               <a class="icon-btn sm" href="{% url 'delivery-detail' order.pk %}"><span class="material-symbols-outlined">visibility</span></a>
-              {% if order.shop.google_map_link %}
-                <a class="icon-btn sm" href="{{ order.shop.google_map_link }}" target="_blank" title="Google xarita">
-                  <span class="material-symbols-outlined">map</span>
-                </a>
-              {% endif %}
-              {% if order.shop.yandex_map_link %}
-                <a class="icon-btn sm" href="{{ order.shop.yandex_map_link }}" target="_blank" title="Yandex xarita">
-                  <span class="material-symbols-outlined">location_on</span>
-                </a>
+              {% if order.shop.latitude and order.shop.longitude %}
+                <button type="button" class="icon-btn sm js-location-picker" data-google-url="https://www.google.com/maps/dir/?api=1&destination={{ order.shop.latitude }},{{ order.shop.longitude }}&travelmode=driving&dir_action=navigate" data-yandex-url="https://yandex.com/maps/?rtext=~{{ order.shop.latitude }},{{ order.shop.longitude }}&rtt=auto&ll={{ order.shop.longitude }}%2C{{ order.shop.latitude }}&z=16&pt={{ order.shop.longitude }},{{ order.shop.latitude }},pm2rdm" title="Lokatsiya">
+                  <span class="material-symbols-outlined">near_me</span>
+                </button>
+              {% elif order.shop.google_map_link or order.shop.yandex_map_link %}
+                <button type="button" class="icon-btn sm js-location-picker" data-google-url="{{ order.shop.google_map_link }}" data-yandex-url="{{ order.shop.yandex_map_link }}" title="Lokatsiya">
+                  <span class="material-symbols-outlined">near_me</span>
+                </button>
               {% endif %}
             </div>
           </td>

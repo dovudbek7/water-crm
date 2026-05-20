@@ -21,6 +21,35 @@
     </div>
   </form>
 </section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h3>Telegram ulash</h3>
+    {% if telegram_profile.telegram_connected %}
+      <span class="badge badge-status-done">Ulangan</span>
+    {% else %}
+      <span class="badge badge-status-new">Ulanmagan</span>
+    {% endif %}
+  </div>
+  <div class="grid-form single-row">
+    <div>
+      <label>Telegram holati</label>
+      <input type="text" readonly value="{% if telegram_profile.telegram_connected %}Ulangan{% else %}Ulanmagan{% endif %}">
+    </div>
+    <div class="form-actions">
+      <form method="post" action="{% url 'telegram-link-generate' %}">
+        {% csrf_token %}
+        <button class="btn btn-light" type="submit">Telegram ulash</button>
+      </form>
+      {% if telegram_profile.telegram_connected %}
+        <form method="post" action="{% url 'telegram-disconnect' %}">
+          {% csrf_token %}
+          <button class="btn btn-danger" type="submit">Ulanishni o'chirish</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</section>
 {% endblock %}
 
 {% block extra_js %}

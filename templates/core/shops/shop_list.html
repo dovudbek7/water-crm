@@ -32,7 +32,16 @@
       <tbody>
         {% for shop in shops %}
           <tr>
-            <td>{{ shop.name }}</td>
+            <td>
+              <div class="entity-cell">
+                {% if shop.photo %}
+                  <img src="{{ shop.photo.url }}" alt="{{ shop.name }}" class="avatar-thumb">
+                {% else %}
+                  <div class="avatar avatar-thumb placeholder-avatar"><span class="material-symbols-outlined">storefront</span></div>
+                {% endif %}
+                <span>{{ shop.name }}</span>
+              </div>
+            </td>
             <td>{{ shop.total_purchased|som }}</td>
             <td>{{ shop.total_paid|som }}</td>
             <td class="{{ shop.balance|shop_balance_class }}">{{ shop.balance|shop_balance_icon }} {{ shop.balance|shop_balance_label }}</td>

@@ -12,8 +12,7 @@ const modalPaidAmount = document.getElementById('modalPaidAmount');
 const modalRemainAmount = document.getElementById('modalRemainAmount');
 const modalExportPdf = document.getElementById('modalExportPdf');
 const modalExportExcel = document.getElementById('modalExportExcel');
-const modalMapGoogle = document.getElementById('modalMapGoogle');
-const modalMapYandex = document.getElementById('modalMapYandex');
+const modalLocationBtn = document.getElementById('modalLocationBtn');
 const modalNoLocation = document.getElementById('modalNoLocation');
 
 function formatSom(value) {
@@ -62,13 +61,16 @@ async function loadOrder(url) {
 
   modalExportPdf.href = data.export_pdf_url;
   modalExportExcel.href = data.export_excel_url;
-  if (modalMapGoogle) {
-    modalMapGoogle.style.display = data.google_maps_url ? 'inline-flex' : 'none';
-    modalMapGoogle.href = data.google_maps_url || '#';
-  }
-  if (modalMapYandex) {
-    modalMapYandex.style.display = data.yandex_maps_url ? 'inline-flex' : 'none';
-    modalMapYandex.href = data.yandex_maps_url || '#';
+  if (modalLocationBtn) {
+    const hasLocation = Boolean(data.google_maps_url || data.yandex_maps_url);
+    modalLocationBtn.style.display = hasLocation ? 'inline-flex' : 'none';
+    modalLocationBtn.dataset.googleUrl = data.google_maps_url || '';
+    modalLocationBtn.dataset.yandexUrl = data.yandex_maps_url || '';
+    modalLocationBtn.onclick = () => {
+      if (typeof openLocationSheet === 'function') {
+        openLocationSheet(data.google_maps_url || '', data.yandex_maps_url || '');
+      }
+    };
   }
   if (modalNoLocation) {
     modalNoLocation.style.display = data.google_maps_url || data.yandex_maps_url ? 'none' : 'inline';

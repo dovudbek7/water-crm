@@ -41,13 +41,31 @@
         <tbody id="itemRows">
           {% for form in formset %}
             <tr class="item-row">
-              <td>{{ form.product }}</td>
-              <td>{{ form.quantity }}</td>
-              <td><input type="text" class="price-input" readonly value="0"></td>
-              <td><input type="text" class="line-total-input" readonly value="0"></td>
+              <td>
+                <label class="mobile-inline-label">Mahsulot</label>
+                {{ form.product }}
+              </td>
+              <td>
+                <label class="mobile-inline-label">Soni</label>
+                {{ form.quantity }}
+              </td>
+              <td>
+                <label class="mobile-inline-label">Narxi</label>
+                <div class="order-line-badges">
+                  <span class="compact-badge price-input">0 so'm</span>
+                </div>
+              </td>
+              <td>
+                <label class="mobile-inline-label">Jami</label>
+                <div class="order-line-badges">
+                  <span class="compact-badge line-total-input">0 so'm</span>
+                </div>
+              </td>
               <td>
                 {{ form.DELETE }}
-                <button class="btn btn-danger btn-sm remove-row" type="button">Olib tashlash</button>
+                <button class="icon-btn sm danger remove-row" type="button">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
               </td>
             </tr>
           {% endfor %}
@@ -90,13 +108,13 @@
 
   <template id="rowTemplate">
     <tr class="item-row">
-      <td>__PRODUCT__</td>
-      <td>__QTY__</td>
-      <td><input type="text" class="price-input" readonly value="0"></td>
-      <td><input type="text" class="line-total-input" readonly value="0"></td>
+      <td><label class="mobile-inline-label">Mahsulot</label>__PRODUCT__</td>
+      <td><label class="mobile-inline-label">Soni</label>__QTY__</td>
+      <td><label class="mobile-inline-label">Narxi</label><div class="order-line-badges"><span class="compact-badge price-input">0 so'm</span></div></td>
+      <td><label class="mobile-inline-label">Jami</label><div class="order-line-badges"><span class="compact-badge line-total-input">0 so'm</span></div></td>
       <td>
         __DELETE__
-        <button class="btn btn-danger btn-sm remove-row" type="button">Olib tashlash</button>
+        <button class="icon-btn sm danger remove-row" type="button"><span class="material-symbols-outlined">delete</span></button>
       </td>
     </tr>
   </template>

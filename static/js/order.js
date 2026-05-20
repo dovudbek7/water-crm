@@ -25,8 +25,8 @@ function lineTotal(row) {
   const qty = Number(qtyInput?.value || 0);
   const total = price * qty;
 
-  if (priceInput) priceInput.value = formatSom(price);
-  if (lineTotalInput) lineTotalInput.value = formatSom(total);
+  if (priceInput) priceInput.textContent = formatSom(price);
+  if (lineTotalInput) lineTotalInput.textContent = formatSom(total);
 
   return total;
 }

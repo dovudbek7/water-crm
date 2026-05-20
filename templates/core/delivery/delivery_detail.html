@@ -16,14 +16,15 @@
     <strong>Holat:</strong>
     {% if order.delivery_status == 'delivered' %}
       <span class="badge badge-status-done">Yetkazildi</span>
+    {% elif order.delivery_status == 'closed' %}
+      <span class="badge badge-status-closed">Yopiq</span>
     {% else %}
       <span class="badge badge-status-new">Yangi</span>
     {% endif %}
   </p>
   {% if google_maps_url or yandex_maps_url %}
     <div class="order-actions" style="margin-bottom: 10px;">
-      {% if google_maps_url %}<a class="btn btn-light" target="_blank" href="{{ google_maps_url }}">Google xarita bilan ochish</a>{% endif %}
-      {% if yandex_maps_url %}<a class="btn btn-light" target="_blank" href="{{ yandex_maps_url }}">Yandex xarita bilan ochish</a>{% endif %}
+      <button type="button" class="btn btn-light js-location-picker" data-google-url="{{ google_maps_url }}" data-yandex-url="{{ yandex_maps_url }}">Lokatsiyani ochish</button>
     </div>
   {% endif %}
   <div class="table-wrap">
@@ -39,7 +40,7 @@
 </section>
 
 <section class="panel form-panel">
-  <h3>Yetkazildi</h3>
+  <h3>Yetkazish natijasi</h3>
   <form method="post" class="grid-form">
     {% csrf_token %}
     <div>
@@ -52,7 +53,10 @@
     </div>
     <div class="form-actions">
       <a href="{% url 'delivery-list' %}" class="btn btn-light">Orqaga</a>
-      {% if order.delivery_status != 'delivered' %}<button class="btn btn-primary" type="submit">Yetkazildi</button>{% endif %}
+      {% if order.delivery_status != 'delivered' %}
+        <button class="btn btn-danger" type="submit" name="delivery_action" value="closed">Yopiq</button>
+        <button class="btn btn-primary" type="submit" name="delivery_action" value="delivered">Yetkazildi</button>
+      {% endif %}
     </div>
   </form>
 </section>
