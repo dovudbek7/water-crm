@@ -1,11 +1,59 @@
+import io
 import re
 
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Q
 from django.forms import formset_factory
+from PIL import Image
 
 from core.models import Employee, Order, Product, Region, Shop, ShopDeposit, UserProfile
+
+ALLOWED_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp', 'image/gif'}
+MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
+
+
+def compress_image(upload) -> InMemoryUploadedFile:
+    img = Image.open(upload)
+    if img.mode not in ('RGB', 'RGBA'):
+        img = img.convert('RGB')
+    elif img.mode == 'RGBA':
+        bg = Image.new('RGB', img.size, (255, 255, 255))
+        bg.paste(img, mask=img.split()[3])
+        img = bg
+
+    output = io.BytesIO()
+    quality = 92
+    img.save(output, format='JPEG', quality=quality, optimize=True)
+
+    while output.tell() > MAX_IMAGE_BYTES and quality > 10:
+        quality -= 10
+        output = io.BytesIO()
+        img.save(output, format='JPEG', quality=quality, optimize=True)
+
+    # If still over 1MB, scale down the image dimensions
+    if output.tell() > MAX_IMAGE_BYTES:
+        scale = 0.9
+        while output.tell() > MAX_IMAGE_BYTES and scale > 0.1:
+            new_size = (int(img.width * scale), int(img.height * scale))
+            resized = img.resize(new_size, Image.LANCZOS)
+            output = io.BytesIO()
+            resized.save(output, format='JPEG', quality=quality, optimize=True)
+            scale -= 0.1
+
+    output.seek(0)
+    name = upload.name.rsplit('.', 1)[0] + '.jpg'
+    return InMemoryUploadedFile(output, 'photo', name, 'image/jpeg', output.getbuffer().nbytes, None)
+
+
+def clean_photo_field(photo):
+    if not photo:
+        return photo
+    content_type = getattr(photo, 'content_type', '') or ''
+    if content_type not in ALLOWED_IMAGE_TYPES:
+        raise forms.ValidationError('Faqat rasm fayllari qabul qilinadi (JPEG, PNG, WEBP, GIF).')
+    return compress_image(photo)
 
 
 PHONE_RE = re.compile(r'\D')
@@ -115,6 +163,7 @@ class ShopForm(forms.ModelForm):
         widgets = {
             'latitude': forms.HiddenInput(),
             'longitude': forms.HiddenInput(),
+            'photo': forms.FileInput(attrs={'accept': 'image/*'}),
         }
         labels = {
             'name': 'Дўкон номи',
@@ -125,6 +174,9 @@ class ShopForm(forms.ModelForm):
             'note': 'Изоҳ',
             'photo': 'Дўкон расми',
         }
+
+    def clean_photo(self):
+        return clean_photo_field(self.cleaned_data.get('photo'))
 
     def clean_phone_primary(self):
         return normalize_uz_phone(self.cleaned_data.get('phone_primary'))
@@ -187,13 +239,16 @@ class ShopDepositForm(forms.ModelForm):
 
 
 class EmployeeCreateForm(forms.Form):
-    photo = forms.FileField(required=False)
+    photo = forms.FileField(required=False, widget=forms.FileInput(attrs={'accept': 'image/*'}))
     first_name = forms.CharField(max_length=150, label='Исм')
     last_name = forms.CharField(max_length=150, label='Фамилия')
     phone_primary = forms.CharField(max_length=25, label='Телефон 1')
     phone_secondary = forms.CharField(max_length=25, required=False, label='Телефон 2')
     role = forms.ChoiceField(choices=Employee.ROLE_CHOICES, label='Лавозим')
     password = forms.CharField(label='Парол', widget=forms.PasswordInput)
+
+    def clean_photo(self):
+        return clean_photo_field(self.cleaned_data.get('photo'))
 
     def clean_phone_primary(self):
         return normalize_uz_phone(self.cleaned_data.get('phone_primary'))
@@ -243,12 +298,18 @@ class EmployeeUpdateForm(forms.ModelForm):
             'phone_secondary': 'Телефон 2',
             'role': 'Лавозим',
         }
+        widgets = {
+            'photo': forms.FileInput(attrs={'accept': 'image/*'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.user_id:
             self.fields['first_name'].initial = self.instance.user.first_name
             self.fields['last_name'].initial = self.instance.user.last_name
+
+    def clean_photo(self):
+        return clean_photo_field(self.cleaned_data.get('photo'))
 
     def clean_phone_primary(self):
         return normalize_uz_phone(self.cleaned_data.get('phone_primary'))
@@ -288,6 +349,9 @@ class UserProfileForm(forms.ModelForm):
             'phone_primary': 'Телефон 1',
             'phone_secondary': 'Телефон 2',
         }
+        widgets = {
+            'photo': forms.FileInput(attrs={'accept': 'image/*'}),
+        }
 
     def __init__(self, *args, user=None, allow_password=True, **kwargs):
         super().__init__(*args, **kwargs)
@@ -300,12 +364,14 @@ class UserProfileForm(forms.ModelForm):
             self.fields.pop('new_password', None)
             self.fields.pop('new_password_confirm', None)
 
+    def clean_photo(self):
+        return clean_photo_field(self.cleaned_data.get('photo'))
+
     def clean_phone_primary(self):
         return normalize_uz_phone(self.cleaned_data.get('phone_primary'))
 
     def clean_phone_secondary(self):
         return normalize_uz_phone(self.cleaned_data.get('phone_secondary'))
-
 
     def clean(self):
         cleaned = super().clean()
@@ -350,12 +416,18 @@ class EmployeeAdminProfileForm(forms.ModelForm):
             'phone_secondary': 'Телефон 2',
             'role': 'Лавозим',
         }
+        widgets = {
+            'photo': forms.FileInput(attrs={'accept': 'image/*'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.user_id:
             self.fields['first_name'].initial = self.instance.user.first_name
             self.fields['last_name'].initial = self.instance.user.last_name
+
+    def clean_photo(self):
+        return clean_photo_field(self.cleaned_data.get('photo'))
 
     def clean_phone_primary(self):
         return normalize_uz_phone(self.cleaned_data.get('phone_primary'))
