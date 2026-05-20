@@ -3,10 +3,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-change-me'
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
+DEBUG = False
+ALLOWED_HOSTS = ["watercrm.pythonanywhere.com"]
 CSRF_TRUSTED_ORIGINS = [
-    "https://b55e-2a05-45c2-108f-ca00-d49a-bbe2-86f2-cc6e.ngrok-free.app"
+    "watercrm.pythonanywhere.com"
 ]
 INSTALLED_APPS = [
     'django.contrib.admin',
