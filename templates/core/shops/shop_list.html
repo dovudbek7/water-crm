@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load core_extras %}
+
+{% block title %}Do'konlar{% endblock %}
+{% block page_title %}Do'konlar{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head wrap-head">
+    <h3>Do'konlar ro'yxati</h3>
+    <div class="order-actions">
+      <a href="{% url 'shop-list-export-pdf' %}" class="btn btn-light"><span class="material-symbols-outlined">picture_as_pdf</span>PDF yuklash</a>
+      <a href="{% url 'shop-list-export-excel' %}" class="btn btn-light"><span class="material-symbols-outlined">table_view</span>Excel yuklash</a>
+      <a href="{% url 'shop-create' %}" class="btn btn-primary">Yangi do'kon</a>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Do'kon nomi</th>
+          <th>Jami olgan</th>
+          <th>Jami to'lagan</th>
+          <th>Balans</th>
+          <th>Amallar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for shop in shops %}
+          <tr>
+            <td>{{ shop.name }}</td>
+            <td>{{ shop.total_purchased|som }}</td>
+            <td>{{ shop.total_paid|som }}</td>
+            <td class="{{ shop.balance|shop_balance_class }}">{{ shop.balance|shop_balance_icon }} {{ shop.balance|shop_balance_label }}</td>
+            <td>
+              <div class="icon-action-group">
+                <a class="icon-btn sm" href="{% url 'shop-detail' shop.pk %}" title="Ko'rish"><span class="material-symbols-outlined">visibility</span></a>
+                <a class="icon-btn sm" href="{% url 'shop-update' shop.pk %}" title="Tahrirlash"><span class="material-symbols-outlined">edit</span></a>
+                <a class="icon-btn sm danger" href="{% url 'shop-delete' shop.pk %}" title="O'chirish"><span class="material-symbols-outlined">delete</span></a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">Hozircha do'konlar yo'q.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

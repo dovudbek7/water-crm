@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Buyurtmani o'chirish{% endblock %}
+{% block page_title %}Buyurtmani o'chirish{% endblock %}
+
+{% block content %}
+<section class="panel form-panel">
+  <h3>Buyurtmani o'chirish</h3>
+  <p>#{{ object.id }} buyurtmani o'chirmoqchimisiz?</p>
+  <form method="post" class="form-actions">
+    {% csrf_token %}
+    <a href="{% url 'order-list' %}" class="btn btn-light">Yo'q</a>
+    <button type="submit" class="btn btn-danger">Ha, o'chirish</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% load static %}
+{% load core_extras %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Suv Savdo Tizimi{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <div class="app-shell">
+    <aside id="sidebar" class="sidebar">
+      <div class="brand">
+        <div class="brand-icon"><span class="material-symbols-outlined">water_drop</span></div>
+        <div>
+          <h1>Suv CRM</h1>
+          <p>Savdo boshqaruvi</p>
+        </div>
+      </div>
+      <nav class="menu">
+        <a href="{% url 'dashboard' %}" class="menu-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><span class="material-symbols-outlined">dashboard</span>Asosiy panel</a>
+        <a href="{% url 'product-list' %}" class="menu-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">inventory_2</span>Mahsulotlar</a>
+        <a href="{% url 'shop-list' %}" class="menu-link {% if 'shop' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">storefront</span>Do'konlar</a>
+        <a href="{% url 'order-list' %}" class="menu-link {% if 'order' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">shopping_cart</span>Buyurtmalar</a>
+        <a href="{% url 'analytics' %}" class="menu-link {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}"><span class="material-symbols-outlined">bar_chart</span>Analitika</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-block">
+          <div class="avatar"><span class="material-symbols-outlined">person</span></div>
+          <div>
+            <strong>{{ request.user.username }}</strong>
+            <p>{% if request.user.is_superuser %}Super Admin{% else %}Admin{% endif %}</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="overlay" id="sidebarOverlay"></div>
+
+    <div class="content-wrap">
+      <header class="topbar">
+        <button id="menuBtn" class="icon-btn" type="button"><span class="material-symbols-outlined">menu</span></button>
+        <h2>{% block page_title %}Asosiy panel{% endblock %}</h2>
+        <div class="topbar-actions">
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="icon-btn" type="submit"><span class="material-symbols-outlined">logout</span></button>
+          </form>
+        </div>
+      </header>
+
+      <main class="page-container">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert {{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

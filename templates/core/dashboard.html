@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_extras %}
+
+{% block title %}Asosiy panel{% endblock %}
+{% block page_title %}Asosiy panel{% endblock %}
+
+{% block content %}
+<section class="stats-grid stats-grid-six">
+  <article class="stat-card">
+    <p>Jami do'konlar</p>
+    <h3>{{ shops_count|comma }}</h3>
+  </article>
+  <article class="stat-card">
+    <p>Jami mahsulotlar</p>
+    <h3>{{ products_count|comma }}</h3>
+  </article>
+  <article class="stat-card">
+    <p>Bu oy savdo summasi</p>
+    <h3>{{ month_sales|som }}</h3>
+  </article>
+  <article class="stat-card danger">
+    <p>Qarzdor do'konlar soni</p>
+    <h3>{{ debt_shops_count|comma }}</h3>
+  </article>
+  <article class="stat-card">
+    <p>Jami qarzdorlik summasi</p>
+    <h3 class="balance-down">↓ -{{ total_debt_amount|som }}</h3>
+  </article>
+  <article class="stat-card">
+    <p>Jami deposit summasi</p>
+    <h3 class="balance-up">↑ +{{ total_deposit_amount|som }}</h3>
+  </article>
+</section>
+
+<section class="chart-grid">
+  <div class="panel">
+    <h3>Oylik savdo</h3>
+    <canvas id="monthlySalesChart"></canvas>
+  </div>
+  <div class="panel">
+    <h3>Eng ko'p sotilgan mahsulotlar</h3>
+    <canvas id="topProductsChart"></canvas>
+  </div>
+</section>
+
+<section class="panel">
+  <h3>So'nggi buyurtmalar</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Do'kon</th>
+          <th>Sana</th>
+          <th>Jami</th>
+          <th>To'langan</th>
+          <th>Qoldiq</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in recent_orders %}
+          <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.shop.name }}</td>
+            <td>{{ order.order_date|date:'d.m.Y' }}</td>
+            <td>{{ order.total_amount|som }}</td>
+            <td>{{ order.paid_amount|som }}</td>
+            <td class="{{ order.remaining_balance|order_balance_class }}">{{ order.remaining_balance|order_balance_icon }} {{ order.remaining_balance|order_balance_label }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">Hozircha buyurtmalar mavjud emas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const monthlyLabels = {{ monthly_labels|safe }};
+  const monthlyValues = {{ monthly_values|safe }};
+  const topLabels = {{ top_product_labels|safe }};
+  const topValues = {{ top_product_values|safe }};
+</script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

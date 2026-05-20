@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tizimga kirish</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="auth-body">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="material-symbols-outlined">water_drop</span>
+    </div>
+    <h1>Suv Savdo Tizimi</h1>
+    <p>Boshqaruv paneliga kirish</p>
+
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="error-list">{{ form.non_field_errors }}</div>
+      {% endif %}
+      <label for="id_username">Ism</label>
+      {{ form.username }}
+
+      <label for="id_password">Parol</label>
+      {{ form.password }}
+
+      <button type="submit" class="btn btn-primary w-full">Kirish</button>
+    </form>
+  </div>
+</body>
+</html>
