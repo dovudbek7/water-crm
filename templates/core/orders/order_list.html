@@ -82,7 +82,8 @@
                 <a class="icon-btn sm" href="{% url 'order-update' order.pk %}" title="Tahrirlash">
                   <span class="material-symbols-outlined">edit</span>
                 </a>
-                {% if order.shop.latitude and order.shop.longitude %}
+
+                <!-- {% if order.shop.latitude and order.shop.longitude %}
                 <button type="button" class="icon-btn sm js-location-picker" data-google-url="https://www.google.com/maps/dir/?api=1&destination={{ order.shop.latitude }},{{ order.shop.longitude }}&travelmode=driving&dir_action=navigate" data-yandex-url="https://yandex.com/maps/?rtext=~{{ order.shop.latitude }},{{ order.shop.longitude }}&rtt=auto&ll={{ order.shop.longitude }}%2C{{ order.shop.latitude }}&z=16&pt={{ order.shop.longitude }},{{ order.shop.latitude }},pm2rdm" title="Lokatsiya">
                   <span class="material-symbols-outlined">near_me</span>
                 </button>
@@ -92,7 +93,9 @@
                 </button>
                 {% else %}
                 <span class="muted-note">Lokatsiya yo'q</span>
-                {% endif %}
+                {% endif %} -->
+
+                
                 {% if request.user.is_superuser %}
                 <a class="icon-btn sm danger" href="{% url 'order-delete' order.pk %}" title="O'chirish">
                   <span class="material-symbols-outlined">delete</span>

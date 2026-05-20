@@ -14,7 +14,7 @@
     <h3>Saqlangan lokatsiyali do'konlar</h3>
     <a class="btn btn-light" href="{% url 'shop-list' %}">Ro'yxatga qaytish</a>
   </div>
-  <div id="shopsMap" style="height: 68vh; border-radius: 12px; border:1px solid var(--border);"></div>
+  <div id="shopsMap" style="height: 68vh; border-radius: 12px; border:1px solid var(--border); z-index: 1;"></div>
 </section>
 
 {{ shops_data|json_script:"shops-map-data" }}
