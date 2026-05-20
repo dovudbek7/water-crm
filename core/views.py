@@ -85,7 +85,7 @@ class LoginPageView(FormView):
             admin_form = AdminLoginForm(request.POST, prefix='admin')
             if admin_form.is_valid():
                 login(request, admin_form.cleaned_data['user'])
-                return redirect('dashboard')
+                return redirect('dashboard' if request.user.is_superuser else 'order-list')
             return self.render_to_response(
                 self.get_context_data(form=emp_form, admin_form=admin_form, open_admin_box=True)
             )
@@ -102,6 +102,13 @@ class LoginPageView(FormView):
 
 class UserLogoutView(LogoutView):
     pass
+
+
+class HomeRedirectView(View):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        return redirect('dashboard' if request.user.is_superuser else 'order-list')
 
 
 def permission_denied_view(request, exception=None):
